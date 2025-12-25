@@ -133,7 +133,7 @@ const Footer = () => {
                         <div>
                             <h5 className='contact-title'>Địa chỉ</h5>
                             <p className='contact-text'>
-                                123 Đường ABC, Quận XYZ, Hà Nội
+                                Xã Cẩm Lạc, Phường Yên Lạc, Hà Tĩnh
                             </p>
                         </div>
                     </div>
@@ -142,7 +142,7 @@ const Footer = () => {
                         <Phone className='contact-icon' />
                         <div>
                             <h5 className='contact-title'>Điện thoại</h5>
-                            <p className='contact-text'>+84 123 456 789</p>
+                            <p className='contact-text'>+84 352 032 375</p>
                         </div>
                     </div>
 
@@ -151,7 +151,7 @@ const Footer = () => {
                         <div>
                             <h5 className='contact-title'>Email</h5>
                             <p className='contact-text'>
-                                contact@internship.vn
+                                vaniizit@internship.vn
                             </p>
                         </div>
                     </div>
@@ -160,13 +160,13 @@ const Footer = () => {
                 {/* Copyright */}
                 <div className='footer-bottom'>
                     <p className='copyright'>
-                        © 2024 Hệ thống quản lý đăng ký thực tập & tuyển dụng.
+                        © 2026 Hệ thống quản lý đăng ký thực tập & tuyển dụng.
                         All rights reserved.
                     </p>
                     <div className='footer-bottom-links'>
                         <a href='#terms'>Điều khoản</a>
                         <a href='#privacy'>Bảo mật</a>
-                        <a href='#powered'>Powered by Readdy</a>
+                        <a href='#powered'>Designed by Công Vinh</a>
                     </div>
                 </div>
             </div>

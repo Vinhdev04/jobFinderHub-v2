@@ -32,28 +32,34 @@ const Navbar = ({ isDark = false }) => {
     };
 
     return (
-        <nav className={`navbar ${isDark ? 'navbar-dark' : 'navbar-light'}`}>
-            <div className='container'>
-                <div className='navbar-content'>
+        <nav className={`navbar ${isDark ? 'navbar--dark' : 'navbar--light'}`}>
+            <div className='container d-flex justify-content-center'>
+                <div className='navbar__content '>
                     {/* Logo */}
-                    <Link to='/' className='navbar-logo'>
-                        <div className='logo-icon'>
-                            <Building2 className='icon' />
+                    <Link to='/' className='navbar__logo'>
+                        <div className='navbar__logo-icon'>
+                            <Building2 className='navbar__icon' />
                         </div>
-                        <div className='logo-text'>
-                            <h1 className='logo-title'>Hệ thống thực tập</h1>
-                            <p className='logo-subtitle'>Kết nối cơ hội</p>
+                        <div className='navbar__logo-text'>
+                            <h1 className='navbar__logo-title'>
+                                Hệ thống thực tập
+                            </h1>
+                            <p className='navbar__logo-subtitle'>
+                                Kết nối cơ hội
+                            </p>
                         </div>
                     </Link>
 
                     {/* Desktop Menu */}
-                    <div className='navbar-menu desktop-menu'>
+                    <div className='navbar__menu navbar__menu--desktop'>
                         {navLinks.map((link) => (
                             <Link
                                 key={link.href}
                                 to={link.href}
-                                className={`nav-link ${
-                                    isActiveLink(link.href) ? 'active' : ''
+                                className={`navbar__link ${
+                                    isActiveLink(link.href)
+                                        ? 'navbar__link--active'
+                                        : ''
                                 }`}
                             >
                                 {link.label}
@@ -62,21 +68,21 @@ const Navbar = ({ isDark = false }) => {
                     </div>
 
                     {/* Actions */}
-                    <div className='navbar-actions desktop-actions'>
+                    <div className='navbar__actions navbar__actions--desktop'>
                         {isAuthenticated ? (
-                            <div className='user-menu-wrapper'>
+                            <div className='navbar__user-menu'>
                                 <button
-                                    className='user-menu-trigger'
+                                    className='navbar__user-trigger'
                                     onClick={toggleUserMenu}
                                 >
                                     <User size={20} />
                                     <span>{user?.fullName || 'User'}</span>
                                 </button>
                                 {isUserMenuOpen && (
-                                    <div className='user-menu-dropdown'>
+                                    <div className='navbar__dropdown'>
                                         <Link
                                             to='/profile'
-                                            className='user-menu-item'
+                                            className='navbar__dropdown-item'
                                             onClick={toggleUserMenu}
                                         >
                                             <User size={18} />
@@ -84,14 +90,14 @@ const Navbar = ({ isDark = false }) => {
                                         </Link>
                                         <Link
                                             to='/dashboard'
-                                            className='user-menu-item'
+                                            className='navbar__dropdown-item'
                                             onClick={toggleUserMenu}
                                         >
                                             <Building2 size={18} />
                                             <span>Bảng điều khiển</span>
                                         </Link>
                                         <button
-                                            className='user-menu-item logout'
+                                            className='navbar__dropdown-item navbar__dropdown-item--logout'
                                             onClick={handleLogout}
                                         >
                                             <LogOut size={18} />
@@ -117,27 +123,29 @@ const Navbar = ({ isDark = false }) => {
                     </div>
 
                     {/* Mobile Toggle */}
-                    <button className='mobile-toggle' onClick={toggle}>
+                    <button className='navbar__mobile-toggle' onClick={toggle}>
                         {isOpen ? <X size={24} /> : <Menu size={24} />}
                     </button>
                 </div>
 
                 {/* Mobile Menu */}
                 {isOpen && (
-                    <div className='mobile-menu'>
+                    <div className='navbar__menu navbar__menu--mobile'>
                         {navLinks.map((link) => (
                             <Link
                                 key={link.href}
                                 to={link.href}
-                                className={`mobile-link ${
-                                    isActiveLink(link.href) ? 'active' : ''
+                                className={`navbar__mobile-link ${
+                                    isActiveLink(link.href)
+                                        ? 'navbar__mobile-link--active'
+                                        : ''
                                 }`}
                                 onClick={toggle}
                             >
                                 {link.label}
                             </Link>
                         ))}
-                        <div className='mobile-actions'>
+                        <div className='navbar__mobile-actions'>
                             {isAuthenticated ? (
                                 <>
                                     <Link to='/profile' onClick={toggle}>

@@ -1,20 +1,26 @@
 // src/App.jsx
 
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import MainLayout from '@layout/MainLayout';
 import AuthLayout from '@layout/AuthLayout';
 import ProtectedRoute from '@components/common/ProtectedRoute/ProtectedRoute.jsx';
 import { routes } from '@routes/index.config.js';
-import './App.css';
 
+// 2. Base variables and utilities
 import '@assets/styles/variables.css';
 import '@assets/styles/animations.css';
+import '@assets/styles/bootstrap-grid.css';
+
+import './App.css';
+import Navbar from '@components/common/Navbar/Navbar';
+import Footer from '@components/common/Footer/Footer';
 
 function App() {
     return (
         <BrowserRouter>
             <div className='app'>
+                <Navbar />
                 <Routes>
                     {routes.map((route, index) => {
                         const Component = route.element;
@@ -73,6 +79,7 @@ function App() {
                         );
                     })}
                 </Routes>
+                <Footer />
             </div>
         </BrowserRouter>
     );

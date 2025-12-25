@@ -12,13 +12,14 @@ const MainLayout = ({
     showFooter = true
 }) => {
     return (
-        <div className=' main-layout'>
-            {showNavbar && <Navbar isDark={isDark} />}
-
-            <main className='main-content'>{children}</main>
-
-            {showFooter && <Footer />}
-        </div>
+        <>
+            {' '}
+            {/* {showNavbar && <Navbar isDark={isDark} />} */}
+            <div className=' main-layout'>
+                <main className='main-content'>{children}</main>
+            </div>
+            {/* {showFooter && <Footer />} */}
+        </>
     );
 };
 
