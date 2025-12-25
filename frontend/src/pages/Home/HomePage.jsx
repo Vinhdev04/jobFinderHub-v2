@@ -11,9 +11,9 @@ const HomePage = () => {
     return (
         <div className='home-page'>
             <HeroSection />
-            <UserRolesSection />
-            <SecuritySection />
             <JobsSection />
+            <SecuritySection />
+            <UserRolesSection />
         </div>
     );
 };

@@ -4,6 +4,7 @@ import HomePage from '@pages/Home/HomePage';
 import LoginPage from '@pages/Login.jsx';
 import RegisterPage from '@pages/Register.jsx';
 import NotFoundPage from '@pages/NotFoundPage.jsx';
+import JobPages from '@pages/JobsPage.jsx';
 // import LoginPage from '@pages/Auth/LoginPage';
 // import RegisterPage from '@pages/Auth/RegisterPage';
 // import JobsPage from '@pages/Jobs/JobsPage';
@@ -51,17 +52,17 @@ export const routes = [
             showFooter: false
         }
     },
-    // {
-    //     path: '/jobs',
-    //     element: JobsPage,
-    //     layout: 'main',
-    //     meta: {
-    //         title: 'Việc làm',
-    //         requiresAuth: false,
-    //         showNavbar: true,
-    //         showFooter: true
-    //     }
-    // },
+    {
+        path: '/jobs',
+        element: JobPages,
+        layout: 'main',
+        meta: {
+            title: 'Việc làm',
+            requiresAuth: false,
+            showNavbar: true,
+            showFooter: true
+        }
+    },
     // {
     //     path: '/jobs/:id',
     //     element: JobDetailPage,

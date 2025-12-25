@@ -1,40 +1,10 @@
-/* src/features/Hero/HeroSection.css */
+/* src/components/common/SearchBar/SearchBar.css */
 
-.hero-section {
-    background: linear-gradient(135deg, #14b8a6 0%, #3b82f6 100%);
-    padding: 4rem 1.5rem;
-    color: white;
-    text-align: center;
+.search-bar-wrapper {
+    width: 100%;
 }
 
-.hero-content {
-    max-width: 900px;
-    margin: 0 auto;
-}
-
-.hero-title {
-    font-size: clamp(2rem, 5vw, 3rem);
-    font-weight: 700;
-    margin-bottom: 1rem;
-    line-height: 1.2;
-}
-
-.hero-subtitle {
-    font-size: clamp(1rem, 2vw, 1.125rem);
-    margin-bottom: 2.5rem;
-    opacity: 0.95;
-    line-height: 1.6;
-}
-
-.hero-search-card {
-    background: white;
-    border-radius: 1rem;
-    padding: 1.5rem;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-        0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
-
-.hero-search-form {
+.search-bar-form {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1rem;
@@ -42,13 +12,13 @@
 }
 
 @media (min-width: 768px) {
-    .hero-search-form {
+    .search-bar-form {
         grid-template-columns: 1fr auto auto;
         gap: 1rem;
     }
 }
 
-.search-input-wrapper {
+.search-input-group {
     position: relative;
     width: 100%;
 }
@@ -60,6 +30,7 @@
     transform: translateY(-50%);
     color: #9ca3af;
     pointer-events: none;
+    z-index: 1;
 }
 
 .search-input {
@@ -82,7 +53,7 @@
     color: #9ca3af;
 }
 
-.category-select {
+.search-select {
     padding: 0.875rem 1rem;
     border: 1px solid #e5e7eb;
     border-radius: 0.5rem;
@@ -94,12 +65,12 @@
     min-width: 180px;
 }
 
-.category-select:focus {
+.search-select:focus {
     border-color: #14b8a6;
     box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
 }
 
-.search-button {
+.search-btn {
     padding: 0.875rem 2rem;
     background: #14b8a6;
     border: none;
@@ -117,34 +88,23 @@
     min-height: 48px;
 }
 
-.search-button:hover {
+.search-btn:hover {
     background: #0d9488;
     transform: translateY(-1px);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-.search-button:active {
+.search-btn:active {
     transform: translateY(0);
 }
 
+/* Responsive */
 @media (max-width: 767px) {
-    .hero-section {
-        padding: 3rem 1rem;
-    }
-
-    .hero-search-card {
-        padding: 1rem;
-    }
-
-    .search-button {
+    .search-btn {
         width: 100%;
     }
 
-    .category-select {
+    .search-select {
         width: 100%;
-    }
-
-    .search-button span {
-        display: inline;
     }
 }

@@ -1,0 +1,81 @@
+/* src/features/Jobs/JobFilter.css */
+
+.job-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.filter-section {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 1rem;
+    padding: 1.5rem;
+}
+
+.filter-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 1rem 0;
+    color: #1f2937;
+}
+
+.filter-categories {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.category-button {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid transparent;
+    border-radius: 0.75rem;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+    font-size: 0.875rem;
+    color: #4b5563;
+    font-weight: 400;
+    transition: all 0.2s;
+}
+
+.category-button:hover {
+    background: #f9fafb;
+}
+
+.category-button.active {
+    background: #d1fae5;
+    color: #0d9488;
+    border-color: #14b8a6;
+    font-weight: 500;
+}
+
+.category-icon {
+    flex-shrink: 0;
+}
+
+.filter-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.stat-value {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #14b8a6;
+}
