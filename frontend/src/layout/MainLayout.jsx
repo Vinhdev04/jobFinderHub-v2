@@ -13,7 +13,6 @@ const MainLayout = ({
 }) => {
     return (
         <>
-            {' '}
             {/* {showNavbar && <Navbar isDark={isDark} />} */}
             <div className=' main-layout'>
                 <main className='main-content'>{children}</main>

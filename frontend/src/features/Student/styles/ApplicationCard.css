@@ -1,0 +1,232 @@
+/* ApplicationCard.css */
+
+.application-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-base);
+    margin-bottom: var(--spacing-md);
+    border: 1px solid var(--color-gray-200);
+}
+
+.application-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateX(4px);
+    border-color: var(--color-primary-light);
+}
+
+.application-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-md);
+    gap: var(--spacing-md);
+}
+
+.application-card__company {
+    display: flex;
+    gap: var(--spacing-md);
+    flex: 1;
+    min-width: 0;
+}
+
+.application-card__logo {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    flex-shrink: 0;
+    background: var(--color-gray-100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--color-gray-200);
+}
+
+.application-card__logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.application-card__logo-placeholder {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.application-card__info {
+    flex: 1;
+    min-width: 0;
+}
+
+.application-card__position {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--color-gray-900);
+    margin: 0 0 var(--spacing-xs) 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.application-card__company-name {
+    font-size: var(--font-size-sm);
+    color: var(--color-gray-600);
+    margin: 0;
+}
+
+.application-card__status {
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.application-card__status--warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.application-card__status--info {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.application-card__status--success {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.application-card__status--error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.application-card__details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-md) 0;
+    border-top: 1px solid var(--color-gray-200);
+    border-bottom: 1px solid var(--color-gray-200);
+    margin-bottom: var(--spacing-md);
+}
+
+.application-card__detail-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: var(--font-size-sm);
+}
+
+.application-card__detail-icon {
+    font-size: var(--font-size-base);
+}
+
+.application-card__detail-label {
+    color: var(--color-gray-600);
+    font-weight: 500;
+}
+
+.application-card__detail-value {
+    color: var(--color-gray-900);
+    font-weight: 600;
+}
+
+.application-card__actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.application-card__btn {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    flex: 1;
+}
+
+.application-card__btn--primary {
+    background: var(--color-primary);
+    color: white;
+}
+
+.application-card__btn--primary:hover {
+    background: var(--color-primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.application-card__btn--secondary {
+    background: white;
+    color: var(--color-gray-700);
+    border: 1px solid var(--color-gray-300);
+}
+
+.application-card__btn--secondary:hover {
+    background: var(--color-gray-50);
+    border-color: var(--color-gray-400);
+}
+
+.application-card__btn:active {
+    transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .application-card {
+        padding: var(--spacing-md);
+    }
+
+    .application-card__header {
+        flex-direction: column;
+    }
+
+    .application-card__status {
+        align-self: flex-start;
+    }
+
+    .application-card__logo {
+        width: 48px;
+        height: 48px;
+    }
+
+    .application-card__position {
+        font-size: var(--font-size-base);
+    }
+
+    .application-card__details {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+
+    .application-card__actions {
+        flex-direction: column;
+    }
+
+    .application-card__btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .application-card {
+        padding: var(--spacing-sm);
+    }
+
+    .application-card__logo {
+        width: 40px;
+        height: 40px;
+    }
+
+    .application-card__position {
+        font-size: var(--font-size-sm);
+    }
+}

@@ -1,0 +1,46 @@
+
+
+/* ==================== SkillTag.css ==================== */
+.skill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  transition: all var(--transition-fast);
+}
+
+.skill-tag:hover {
+  background: var(--color-primary);
+  color: white;
+}
+
+.skill-tag__text {
+  line-height: 1.5;
+}
+
+.skill-tag__remove {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: var(--font-size-xl);
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: opacity var(--transition-fast);
+}
+
+.skill-tag__remove:hover {
+  opacity: 1;
+}
+
