@@ -1,0 +1,48 @@
+.company-card {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: white;
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-sm);
+    transition: background var(--transition-base);
+    cursor: pointer;
+}
+
+.company-card:hover {
+    background: var(--color-gray-50);
+}
+
+/* Element: company-card__icon */
+.company-card__icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-xl);
+    flex-shrink: 0;
+    color: white;
+}
+
+/* Element: company-card__info */
+.company-card__info {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Element: company-card__name */
+.company-card__name {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-gray-900);
+    margin-bottom: var(--spacing-xs);
+}
+
+/* Element: company-card__count */
+.company-card__count {
+    font-size: var(--font-size-xs);
+    color: var(--color-gray-600);
+}

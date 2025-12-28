@@ -11,7 +11,7 @@ import JobPages from '@pages/JobsPage.jsx';
 import StudentDashboard from '@pages/StudentDashboard.jsx';
 import RecruiterDashboard from '@pages/RecruiterDashboard.jsx';
 import CompanyDashboard from '@pages/CompanyDashboard.jsx';
-import AdminDashboard from '@pages/AdminPage.jsx';
+import TeacherDashboard from '@pages/TeacherDashboard.jsx';
 import NewsPage from '@pages/NewsPage';
 import AboutPage from '@pages/AboutPage';
 // =======================
@@ -30,7 +30,7 @@ export const routes = [
             showFooter: true
         }
     },
-     {
+    {
         path: '/news',
         element: NewsPage,
         layout: 'main',
@@ -124,13 +124,13 @@ export const routes = [
         }
     },
     {
-        path: '/admin',
-        element: AdminDashboard,
+        path: '/teacher',
+        element: TeacherDashboard,
         layout: 'dashboard',
         meta: {
-            title: 'Dashboard Quản trị viên',
+            title: 'Dashboard Giảng viên',
             requiresAuth: true,
-            requiredRole: 'admin',
+            requiredRole: 'teacher',
             showNavbar: false,
             showFooter: false
         }
@@ -215,7 +215,11 @@ export const dashboardNavLinks = {
     student: [
         { label: 'Tổng quan', href: '/student', icon: 'LayoutDashboard' },
         { label: 'Tìm việc làm', href: '/jobs', icon: 'Search' },
-        { label: 'Đơn ứng tuyển', href: '/student/applications', icon: 'FileText' }
+        {
+            label: 'Đơn ứng tuyển',
+            href: '/student/applications',
+            icon: 'FileText'
+        }
     ],
     recruiter: [
         { label: 'Tổng quan', href: '/recruiter', icon: 'LayoutDashboard' },
@@ -223,7 +227,11 @@ export const dashboardNavLinks = {
     ],
     company: [
         { label: 'Tổng quan', href: '/company', icon: 'LayoutDashboard' },
-        { label: 'Đăng tin tuyển dụng', href: '/company/post-job', icon: 'PlusCircle' },
+        {
+            label: 'Đăng tin tuyển dụng',
+            href: '/company/post-job',
+            icon: 'PlusCircle'
+        },
         { label: 'Quản lý tin đăng', href: '/company/jobs', icon: 'Briefcase' }
     ]
 };
@@ -231,8 +239,7 @@ export const dashboardNavLinks = {
 // =======================
 // HELPERS
 // =======================
-export const getDashboardRoute = (role) =>
-    dashboardRedirects[role] || '/';
+export const getDashboardRoute = (role) => dashboardRedirects[role] || '/';
 
 export const canAccessRoute = (route, userRole) => {
     if (!route.meta?.requiresAuth) return true;
@@ -240,7 +247,6 @@ export const canAccessRoute = (route, userRole) => {
     return route.meta.requiredRole === userRole;
 };
 
-export const getNavLinksByRole = (role) =>
-    dashboardNavLinks[role] || [];
+export const getNavLinksByRole = (role) => dashboardNavLinks[role] || [];
 
 export default routes;
