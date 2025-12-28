@@ -1,0 +1,31 @@
+.adminHeader {
+  text-align: center;
+  padding: var(--spacing-3xl) 0;
+  background: linear-gradient(135deg, #14b8a6, #3b82f6);
+  color: white;
+  border-radius: var(--radius-2xl);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.adminHeader h1 {
+  font-size: var(--font-size-4xl);
+  font-weight: 700;
+  margin: 0 0 var(--spacing-md) 0;
+}
+
+.adminHeader p {
+  font-size: var(--font-size-lg);
+  opacity: 0.95;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .adminHeader h1 {
+    font-size: var(--font-size-2xl);
+  }
+  
+  .adminHeader p {
+    font-size: var(--font-size-base);
+  }
+}
+

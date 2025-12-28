@@ -1,0 +1,96 @@
+.tableSection {
+  background: white;
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
+  border: 1px solid var(--color-gray-200);
+}
+
+.tableContainer {
+  overflow-x: auto;
+}
+
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dataTable thead {
+  background: var(--color-gray-50);
+}
+
+.dataTable th {
+  padding: var(--spacing-md);
+  text-align: left;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-gray-700);
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--color-gray-200);
+}
+
+.dataTable td {
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-gray-200);
+  font-size: var(--font-size-sm);
+}
+
+.dataTable tr:hover {
+  background: var(--color-gray-50);
+}
+
+.companyCell {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.companyIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-lg);
+  background: var(--color-gray-100);
+}
+
+.statusBadge {
+  padding: 4px var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+}
+
+.statusBadge.accepted {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--color-success);
+}
+
+.statusBadge.pending {
+  background: rgba(251, 146, 60, 0.1);
+  color: var(--color-warning);
+}
+
+.statusBadge.reviewing {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--color-secondary);
+}
+
+.statusBadge.rejected {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-error);
+}
+
+.moreBtn {
+  padding: var(--spacing-xs);
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--color-gray-500);
+  font-size: var(--font-size-lg);
+}
+
+.moreBtn:hover {
+  color: var(--color-gray-900);
+}

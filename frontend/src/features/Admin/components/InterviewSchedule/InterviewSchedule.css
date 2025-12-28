@@ -1,0 +1,103 @@
+.scheduleSection {
+  background: white;
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
+  border: 1px solid var(--color-gray-200);
+  margin-bottom: var(--spacing-xl);
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-gray-900);
+  margin: 0;
+}
+
+.viewAllLink {
+  color: var(--color-primary);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.viewAllLink:hover {
+  text-decoration: underline;
+}
+
+.scheduleList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.scheduleItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  background: var(--color-gray-50);
+  border-radius: var(--radius-lg);
+  transition: all var(--transition-fast);
+}
+
+.scheduleItem:hover {
+  background: var(--color-gray-100);
+}
+
+.companyLogo {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xl);
+  border: 1px solid var(--color-gray-200);
+}
+
+.scheduleInfo {
+  flex: 1;
+}
+
+.companyName {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-gray-900);
+  margin: 0 0 4px 0;
+}
+
+.position {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+  margin: 0;
+}
+
+.scheduleDetails {
+  display: flex;
+  gap: var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+}
+
+.applyBtn {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.applyBtn:hover {
+  background: var(--color-primary-dark);
+}
