@@ -1,0 +1,92 @@
+/* src/assets/styles/components/about/WorkflowSection.module.css */
+
+.section {
+  padding: var(--spacing-3xl) var(--spacing-md);
+  background: var(--color-gray-900);
+}
+
+.sectionTitle {
+  text-align: center;
+  font-size: var(--font-size-3xl);
+  font-weight: bold;
+  margin-bottom: var(--spacing-sm);
+  color: white;
+}
+
+.sectionSubtitle {
+  text-align: center;
+  font-size: var(--font-size-lg);
+  color: var(--color-gray-400);
+  margin-bottom: var(--spacing-2xl);
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.step {
+  display: flex;
+  gap: var(--spacing-xl);
+  align-items: center;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.stepReverse {
+  flex-direction: row-reverse;
+}
+
+.number {
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-2xl);
+  font-weight: bold;
+  color: white;
+}
+
+.content {
+  flex: 1;
+  background: var(--color-gray-800);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  border: 1px solid var(--color-gray-700);
+  transition: var(--transition-base);
+}
+
+.content:hover {
+  border-color: var(--color-primary);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(20, 184, 166, 0.2);
+}
+
+.title {
+  font-size: var(--font-size-xl);
+  margin-bottom: var(--spacing-sm);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.description {
+  color: var(--color-gray-400);
+  line-height: 1.6;
+  font-size: var(--font-size-base);
+}
+
+@media (max-width: 768px) {
+  .step,
+  .stepReverse {
+    flex-direction: column !important;
+  }
+}
