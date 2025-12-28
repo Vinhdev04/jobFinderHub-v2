@@ -1,0 +1,40 @@
+/* src/assets/styles/components/news/ArticleGrid.module.css */
+.section {
+  background: var(--color-gray-50);
+  padding: var(--spacing-3xl) 0;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+}
+
+.heading {
+  text-align: center;
+  font-size: var(--font-size-3xl);
+  margin-bottom: var(--spacing-2xl);
+  color: var(--color-gray-900);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--spacing-xl);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.loadMore {
+  display: block;
+  margin: 0 auto;
+  background: var(--color-primary);
+  color: white;
+  padding: var(--spacing-md) var(--spacing-2xl);
+  border-radius: var(--radius-lg);
+  font-weight: 600;
+  transition: var(--transition-base);
+}
+
+.loadMore:hover {
+  background: var(--color-primary-dark);
+}

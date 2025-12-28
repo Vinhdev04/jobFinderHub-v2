@@ -1,0 +1,99 @@
+/* src/assets/styles/components/news/HeroArticle.module.css */
+.hero {
+  max-width: 1200px;
+  margin: var(--spacing-3xl) auto var(--spacing-2xl);
+  padding: 0 var(--spacing-md);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-2xl);
+  background: white;
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.imageWrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.content {
+  padding: var(--spacing-2xl);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--spacing-md);
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  font-size: var(--font-size-sm);
+}
+
+.tag {
+  background: var(--color-success);
+  color: white;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+}
+
+.date {
+  color: var(--color-gray-500);
+}
+
+.title {
+  font-size: var(--font-size-3xl);
+  line-height: 1.3;
+  color: var(--color-gray-900);
+}
+
+.excerpt {
+  font-size: var(--font-size-lg);
+  color: var(--color-gray-600);
+}
+
+
+.readMore {
+  align-self: flex-start;
+  outline: 0;background: var(--color-primary);
+  border: 0;
+  color: white;
+  padding: var(--spacing-sm) var(--spacing-xl);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: var(--font-size-base);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: var(--spacing-md);
+  transition: var(--transition-base);
+  font-weight: bold;
+}
+
+.readMore:hover {
+  background: var(--color-primary-dark);
+}
+.authorInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  color: var(--color-gray-600);
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-lg);
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  background: var(--color-primary);
+  color: white;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: bold;
+  font-size: var(--font-size-base);
+}

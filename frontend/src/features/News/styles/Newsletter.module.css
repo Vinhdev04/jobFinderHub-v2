@@ -1,0 +1,68 @@
+
+.newsletter {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: white;
+  padding: var(--spacing-3xl) 0;
+  margin-top: var(--spacing-3xl);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--spacing-xl);
+}
+
+.content {
+  flex: 1;
+  min-width: 300px;
+}
+
+.icon {
+  font-size: var(--font-size-5xl);
+  margin-bottom: var(--spacing-md);
+}
+
+.title {
+  font-size: var(--font-size-3xl);
+  margin-bottom: var(--spacing-sm);
+}
+
+.subtitle {
+  font-size: var(--font-size-lg);
+  opacity: 0.9;
+}
+
+.form {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.input {
+  flex: 1;
+  min-width: 280px;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--radius-md);
+  border: none;
+  font-size: var(--font-size-base);
+}
+
+.submit {
+  background: white;
+  color: var(--color-primary-dark);
+  padding: var(--spacing-md) var(--spacing-xl);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  transition: var(--transition-base);
+  white-space: nowrap;
+}
+
+.submit:hover {
+  background: var(--color-gray-100);
+  transform: translateY(-2px);
+}

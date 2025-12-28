@@ -1,0 +1,52 @@
+/* src/assets/styles/components/news/CategoryTabs.module.css */
+.section {
+  padding: var(--spacing-xl) 0;
+  background: white;
+  border-bottom: 1px dashed var(--color-gray-300);
+}
+
+.tabsContainer {
+  max-width: 1232px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: var(--color-gray-100);
+  border-radius: var(--radius-lg);
+  color: var(--color-gray-600);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  transition: var(--transition-base);
+  border: none;
+}
+
+.tab:hover {
+  background: var(--color-gray-200);
+  color: var(--color-gray-900);
+}
+
+.tab.active {
+  background: var(--color-primary);
+  color: white;
+}
+
+.tab.active:hover {
+  background: var(--color-primary-dark);
+}
+
+.icon {
+  font-size: var(--font-size-xl);
+}
+
+.label {
+  white-space: nowrap;
+}

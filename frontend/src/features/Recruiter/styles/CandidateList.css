@@ -1,0 +1,165 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.candidateItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-lg);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-lg);
+  background: white;
+  transition: all var(--transition-fast);
+}
+
+.candidateItem:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.candidateInfo {
+  display: flex;
+  gap: var(--spacing-md);
+  flex: 1;
+}
+
+.avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.details {
+  flex: 1;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+}
+
+.name {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-gray-900);
+  margin: 0;
+}
+
+.badge {
+  padding: 2px var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.badge.new {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--color-secondary);
+}
+
+.badge.interviewing {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--color-warning);
+}
+
+.badge.hired {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--color-success);
+}
+
+.position {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.meta {
+  display: flex;
+  gap: var(--spacing-md);
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  margin-bottom: var(--spacing-sm);
+}
+
+.skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+.skillTag {
+  padding: 2px var(--spacing-sm);
+  background-color: var(--color-gray-100);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-700);
+}
+
+.actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.viewBtn {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border: 1px solid var(--color-primary);
+  background: var(--color-primary);
+  color: white;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.viewBtn:hover {
+  background: var(--color-primary-dark);
+}
+
+.scheduleBtn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--color-gray-300);
+  background: white;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-lg);
+}
+
+.scheduleBtn:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+@media (max-width: 768px) {
+  .candidateItem {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .candidateInfo {
+    margin-bottom: var(--spacing-md);
+  }
+
+  .actions {
+    width: 100%;
+  }
+
+  .viewBtn {
+    flex: 1;
+  }
+}
