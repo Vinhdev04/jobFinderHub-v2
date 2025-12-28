@@ -15,6 +15,7 @@ import TeacherDashboard from '@pages/TeacherDashboard.jsx';
 import AdminDashboard from '@pages/AdminDashboard.jsx';
 import NewsPage from '@pages/NewsPage';
 import AboutPage from '@pages/AboutPage';
+import NewDetailPages from '@pages/NewDetailPage';
 // =======================
 // ROUTES CONFIG
 // =======================
@@ -37,6 +38,17 @@ export const routes = [
         layout: 'main',
         meta: {
             title: 'Tin tức',
+            requiresAuth: false,
+            showNavbar: true,
+            showFooter: true
+        }
+    },
+    {
+        path: '/news/:id',
+        element: NewDetailPages,
+        layout: 'main',
+        meta: {
+            title: 'Chi tiết bài viết',
             requiresAuth: false,
             showNavbar: true,
             showFooter: true
