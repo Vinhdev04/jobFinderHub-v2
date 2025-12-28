@@ -12,6 +12,7 @@ import StudentDashboard from '@pages/StudentDashboard.jsx';
 import RecruiterDashboard from '@pages/RecruiterDashboard.jsx';
 import CompanyDashboard from '@pages/CompanyDashboard.jsx';
 import TeacherDashboard from '@pages/TeacherDashboard.jsx';
+import AdminDashboard from '@pages/AdminDashboard.jsx';
 import NewsPage from '@pages/NewsPage';
 import AboutPage from '@pages/AboutPage';
 // =======================
@@ -131,6 +132,18 @@ export const routes = [
             title: 'Dashboard Giảng viên',
             requiresAuth: true,
             requiredRole: 'teacher',
+            showNavbar: false,
+            showFooter: false
+        }
+    },
+    {
+        path: '/admin',
+        element: AdminDashboard,
+        layout: 'dashboard',
+        meta: {
+            title: 'Dashboard Quản trị hệ thống',
+            requiresAuth: true,
+            requiredRole: 'admin',
             showNavbar: false,
             showFooter: false
         }

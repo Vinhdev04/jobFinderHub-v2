@@ -1,145 +1,88 @@
-import React, { useState } from 'react';
-import StatCard from '@features/Admin/components/StatCard';
-import InternCard from '@features/Admin/components/InternCard';
-import ReportCard from '@features/Admin/components/ReportCard';
-import JobCard from '@features/Admin/components/JobCard';
-import CompanyCard from '@features/Admin/components/CompanyCard';
+// Dashboard/AdminDashboard.jsx
+
+import React from 'react';
+import useTeacherDashboard from '@features/Teacher/hooks/useTeacherDashboard.js';
+import {
+    TABS_CONFIG,
+    QUICK_ACTIONS,
+    STAT_TYPES
+} from '@features/Teacher/constants/constants.js';
+import StatCard from '@features/Teacher/components/StatCard';
+import InternCard from '@features/Teacher/components/InternCard';
+import ReportCard from '@features/Teacher/components/ReportCard';
+import JobCard from '@features/Teacher/components/JobCard';
+import CompanyCard from '@features/Teacher/components/CompanyCard';
 import './TeacherDashboard.css';
 
-const AdminDashboard = () => {
-    const [activeTab, setActiveTab] = useState('overview');
+const TeacherDashboard = () => {
+    // Get all logic from custom hook
+    const {
+        // Tab management
+        activeTab,
+        changeTab,
 
-    // Mock Data
-    const stats = [
+        // Stats
+        stats,
+        statsLoading,
+
+        // Interns
+        interns,
+        loading: internsLoading,
+
+        // Reports
+        reports,
+        loading: reportsLoading,
+        handleViewReport,
+        handleApproveReport,
+
+        // Companies
+        companies,
+        loading: companiesLoading,
+
+        // Jobs
+        pendingJobs,
+        jobsLoading,
+        handleApproveJob,
+
+        // Actions
+        handleExportReport,
+        handleQuickAction,
+
+        // Badge counts
+        badgeCounts
+    } = useTeacherDashboard();
+
+    // Prepare stats data for display
+    const statsData = [
         {
             icon: '👤',
-            count: 156,
+            count: stats.total_students,
             label: 'Sinh viên quản lý',
-            colorType: 'teal'
+            colorType: STAT_TYPES.TEAL
         },
-        { icon: '📅', count: 45, label: 'Đang thực tập', colorType: 'blue' },
+        {
+            icon: '📅',
+            count: stats.active_interns,
+            label: 'Đang thực tập',
+            colorType: STAT_TYPES.BLUE
+        },
         {
             icon: '📄',
-            count: 12,
+            count: stats.pending_reports,
             label: 'Báo cáo chờ duyệt',
-            colorType: 'orange'
+            colorType: STAT_TYPES.ORANGE
         },
         {
             icon: '🏢',
-            count: 28,
+            count: stats.partner_companies,
             label: 'Doanh nghiệp hợp tác',
-            colorType: 'green'
+            colorType: STAT_TYPES.GREEN
         }
     ];
 
-    const interns = [
-        {
-            id: 'SV001',
-            name: 'Nguyễn Văn A',
-            avatar: '👨',
-            company: 'FPT Software',
-            position: 'Frontend Developer',
-            progress: 65,
-            startDate: '01/01/2024',
-            status: 'Đang thực tập'
-        },
-        {
-            id: 'SV002',
-            name: 'Trần Thị B',
-            avatar: '👩',
-            company: 'VNG Corporation',
-            position: 'Marketing Digital',
-            progress: 85,
-            startDate: '15/12/2023',
-            status: 'Đang thực tập'
-        }
-    ];
-
-    const reports = [
-        {
-            id: 1,
-            title: 'Báo cáo tuần 4 - Tháng 1/2024',
-            author: 'Nguyễn Văn A (SV001)',
-            date: '15/01/2024'
-        },
-        {
-            id: 2,
-            title: 'Báo cáo tuần 4 - Tháng 1/2024',
-            author: 'Trần Thị B (SV002)',
-            date: '14/01/2024'
-        }
-    ];
-
-    const jobs = [
-        {
-            id: 1,
-            company: 'Shopee Vietnam',
-            position: 'Data Analyst Intern',
-            locations: '3 vị trí',
-            date: '16/01/2024'
-        },
-        {
-            id: 2,
-            company: 'Grab Vietnam',
-            position: 'Mobile Developer Intern',
-            locations: '2 vị trí',
-            date: '15/01/2024'
-        }
-    ];
-
-    const companies = [
-        {
-            id: 1,
-            name: 'FPT Software',
-            interns: 23,
-            icon: '💼',
-            color: '#0ea5e9'
-        },
-        {
-            id: 2,
-            name: 'VNG Corporation',
-            interns: 18,
-            icon: '🎮',
-            color: '#f97316'
-        },
-        {
-            id: 3,
-            name: 'Tiki Corporation',
-            interns: 15,
-            icon: '🛒',
-            color: '#a855f7'
-        }
-    ];
-
-    const tabs = [
-        { id: 'overview', icon: '📊', label: 'Tổng quan' },
-        { id: 'students', icon: '👤', label: 'Sinh viên' },
-        { id: 'reports', icon: '📄', label: 'Báo cáo thực tập', badge: 2 },
-        { id: 'companies', icon: '🏢', label: 'Doanh nghiệp' },
-        { id: 'approval', icon: '✅', label: 'Phê duyệt tin', badge: 2 }
-    ];
-
-    const quickActions = [
-        { id: 'export', icon: '📊', label: 'Xuất báo cáo' },
-        { id: 'add-student', icon: '➕', label: 'Thêm sinh viên' },
-        { id: 'manage-company', icon: '🏢', label: 'Quản lý DN' }
-    ];
-
-    // Handlers
-    const handleViewReport = (id) => {
-        console.log('View report:', id);
-    };
-
-    const handleApproveReport = (id) => {
-        console.log('Approve report:', id);
-    };
-
-    const handleExportReport = () => {
-        console.log('Export report');
-    };
-
-    const handleQuickAction = (actionId) => {
-        console.log('Quick action:', actionId);
+    // Get badge count for a tab
+    const getBadgeCount = (badgeKey) => {
+        return badgeKey ? badgeCounts[badgeKey] : null;
     };
 
     return (
@@ -164,14 +107,18 @@ const AdminDashboard = () => {
 
             {/* Stats Grid */}
             <div className='admin-dashboard__stats'>
-                {stats.map((stat, index) => (
-                    <StatCard key={index} {...stat} />
-                ))}
+                {statsLoading ? (
+                    <div>Đang tải...</div>
+                ) : (
+                    statsData.map((stat, index) => (
+                        <StatCard key={index} {...stat} />
+                    ))
+                )}
             </div>
 
             {/* Tabs */}
             <nav className='admin-dashboard__tabs'>
-                {tabs.map((tab) => (
+                {TABS_CONFIG.map((tab) => (
                     <button
                         key={tab.id}
                         className={`admin-dashboard__tab ${
@@ -179,12 +126,12 @@ const AdminDashboard = () => {
                                 ? 'admin-dashboard__tab--active'
                                 : ''
                         }`}
-                        onClick={() => setActiveTab(tab.id)}
+                        onClick={() => changeTab(tab.id)}
                     >
                         {tab.icon} {tab.label}
-                        {tab.badge && (
+                        {tab.badge && getBadgeCount(tab.badge) > 0 && (
                             <span className='admin-dashboard__tab-badge'>
-                                {tab.badge}
+                                {getBadgeCount(tab.badge)}
                             </span>
                         )}
                     </button>
@@ -203,9 +150,16 @@ const AdminDashboard = () => {
                             </h2>
                         </div>
                         <div className='admin-dashboard__interns'>
-                            {interns.map((intern) => (
-                                <InternCard key={intern.id} intern={intern} />
-                            ))}
+                            {internsLoading ? (
+                                <div>Đang tải...</div>
+                            ) : (
+                                interns.map((intern) => (
+                                    <InternCard
+                                        key={intern.id}
+                                        intern={intern}
+                                    />
+                                ))
+                            )}
                         </div>
                     </section>
 
@@ -215,19 +169,29 @@ const AdminDashboard = () => {
                             <h2 className='admin-dashboard__section-title'>
                                 Báo cáo chờ duyệt
                             </h2>
-                            <span className='admin-dashboard__section-badge'>
-                                2 báo cáo
-                            </span>
+                            {badgeCounts.pending_reports > 0 && (
+                                <span className='admin-dashboard__section-badge'>
+                                    {badgeCounts.pending_reports} báo cáo
+                                </span>
+                            )}
                         </div>
                         <div className='admin-dashboard__reports'>
-                            {reports.map((report) => (
-                                <ReportCard
-                                    key={report.id}
-                                    report={report}
-                                    onView={handleViewReport}
-                                    onApprove={handleApproveReport}
-                                />
-                            ))}
+                            {reportsLoading ? (
+                                <div>Đang tải...</div>
+                            ) : (
+                                reports
+                                    .filter(
+                                        (report) => report.status === 'pending'
+                                    )
+                                    .map((report) => (
+                                        <ReportCard
+                                            key={report.id}
+                                            report={report}
+                                            onView={handleViewReport}
+                                            onApprove={handleApproveReport}
+                                        />
+                                    ))
+                            )}
                         </div>
                     </section>
                 </main>
@@ -240,9 +204,15 @@ const AdminDashboard = () => {
                             Tin tuyển dụng chờ duyệt
                         </h3>
                         <div className='admin-dashboard__jobs'>
-                            {jobs.map((job) => (
-                                <JobCard key={job.id} job={job} />
-                            ))}
+                            {jobsLoading ? (
+                                <div>Đang tải...</div>
+                            ) : (
+                                pendingJobs
+                                    .filter((job) => job.status === 'pending')
+                                    .map((job) => (
+                                        <JobCard key={job.id} job={job} />
+                                    ))
+                            )}
                         </div>
                     </div>
 
@@ -252,12 +222,16 @@ const AdminDashboard = () => {
                             Doanh nghiệp hàng đầu
                         </h3>
                         <div className='admin-dashboard__companies'>
-                            {companies.map((company) => (
-                                <CompanyCard
-                                    key={company.id}
-                                    company={company}
-                                />
-                            ))}
+                            {companiesLoading ? (
+                                <div>Đang tải...</div>
+                            ) : (
+                                companies.map((company) => (
+                                    <CompanyCard
+                                        key={company.id}
+                                        company={company}
+                                    />
+                                ))
+                            )}
                         </div>
                     </div>
 
@@ -267,7 +241,7 @@ const AdminDashboard = () => {
                             Thao tác nhanh
                         </h3>
                         <div className='admin-dashboard__quick-actions'>
-                            {quickActions.map((action) => (
+                            {QUICK_ACTIONS.map((action) => (
                                 <button
                                     key={action.id}
                                     className='admin-dashboard__quick-action-btn'
@@ -284,4 +258,4 @@ const AdminDashboard = () => {
     );
 };
 
-export default AdminDashboard;
+export default TeacherDashboard;
