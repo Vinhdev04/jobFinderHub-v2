@@ -1,40 +1,59 @@
 /* src/assets/styles/components/news/ArticleGrid.module.css */
-.section {
-  background: var(--color-gray-50);
-  padding: var(--spacing-3xl) 0;
+
+.articleGrid {
+    background: var(--color-gray-50);
+    padding: var(--spacing-3xl) 0;
 }
 
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 var(--spacing-md);
+.articleGrid__container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-md);
 }
 
-.heading {
-  text-align: center;
-  font-size: var(--font-size-3xl);
-  margin-bottom: var(--spacing-2xl);
-  color: var(--color-gray-900);
+.articleGrid__heading {
+    text-align: center;
+    font-size: var(--font-size-3xl);
+    font-weight: 700;
+    margin-bottom: var(--spacing-2xl);
+    color: var(--color-gray-900);
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: var(--spacing-xl);
-  margin-bottom: var(--spacing-2xl);
+.articleGrid__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: var(--spacing-xl);
+    margin-bottom: var(--spacing-3xl);
 }
 
-.loadMore {
-  display: block;
-  margin: 0 auto;
-  background: var(--color-primary);
-  color: white;
-  padding: var(--spacing-md) var(--spacing-2xl);
-  border-radius: var(--radius-lg);
-  font-weight: 600;
-  transition: var(--transition-base);
+.articleGrid__loadMore {
+    display: block;
+    margin: 0 auto;
+    background: var(--color-primary);
+    color: white;
+    padding: var(--spacing-md) var(--spacing-2xl);
+    border-radius: var(--radius-lg);
+    font-weight: 600;
+    font-size: var(--font-size-base);
+    transition: var(--transition-base);
+    border: none;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
 }
 
-.loadMore:hover {
-  background: var(--color-primary-dark);
+.articleGrid__loadMore:hover {
+    background: var(--color-primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+@media (max-width: 768px) {
+    .articleGrid__grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+    }
+
+    .articleGrid__heading {
+        font-size: var(--font-size-2xl);
+    }
 }
