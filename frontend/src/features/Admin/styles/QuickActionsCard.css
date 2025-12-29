@@ -1,0 +1,69 @@
+.quick-actions {
+    display: grid;
+    gap: 1rem;
+}
+
+.quick-action {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.quick-action:hover {
+    background: linear-gradient(135deg, #14b8a6, #0d9488);
+    color: white;
+    transform: translateX(4px);
+}
+
+.quick-action-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+}
+
+.quick-action-icon.teal {
+    background: linear-gradient(135deg, #14b8a6, #0d9488);
+}
+
+.quick-action-icon.blue {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.quick-action-icon.orange {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.quick-action:hover .quick-action-icon {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.quick-action-text h4 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: #111827;
+}
+
+.quick-action-text p {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.quick-action:hover .quick-action-text h4,
+.quick-action:hover .quick-action-text p {
+    color: white;
+}
+
+.quick-action:hover .quick-action-text p {
+    color: rgba(255, 255, 255, 0.8);
+}

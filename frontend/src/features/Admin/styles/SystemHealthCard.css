@@ -1,0 +1,82 @@
+/* src/features/Admin/components/SystemHealthCard.css */
+
+.card {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.card-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.card-action {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+    background: white;
+    color: #6b7280;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.card-action:hover {
+    background: #f9fafb;
+    border-color: #14b8a6;
+    color: #14b8a6;
+}
+
+.health-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.health-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.health-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.health-label {
+    font-size: 0.875rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.health-value {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.health-bar {
+    height: 8px;
+    background: #f3f4f6;
+    border-radius: 1rem;
+    overflow: hidden;
+}
+
+.health-fill {
+    height: 100%;
+    border-radius: 1rem;
+    transition: width 0.5s ease;
+}
