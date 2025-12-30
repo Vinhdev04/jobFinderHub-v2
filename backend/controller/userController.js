@@ -3,6 +3,7 @@ const User = require('../models/User');
 const authService = require('../services/authService');
 const { AppError } = require('../middleware/errorHandler');
 const sendEmail = require('../utils/sendEmail');
+const Activity = require('../models/Activity');
 const path = require('path');
 const fs = require('fs');
 
@@ -57,6 +58,20 @@ exports.createUser = async (req, res, next) => {
                     console.error('❌ Error sending welcome email:', emailErr.message);
                 }
             });
+        }
+
+        // Log activity
+        try {
+            await Activity.create({
+                action: 'Tạo người dùng',
+                user: req.user && req.user._id ? req.user._id : null,
+                userEmail: req.user && req.user.email ? req.user.email : null,
+                ip: req.ip,
+                status: 'success',
+                meta: { targetUser: user._id, email: user.email }
+            });
+        } catch (logErr) {
+            console.error('❌ Activity log error:', logErr.message);
         }
 
         const normalized = require('../services/authService').getUserResponse(user);
@@ -203,6 +218,20 @@ exports.updateUser = async (req, res, next) => {
 
         await user.save();
 
+        // Log activity
+        try {
+            await Activity.create({
+                action: 'Cập nhật người dùng',
+                user: req.user && req.user._id ? req.user._id : null,
+                userEmail: req.user && req.user.email ? req.user.email : null,
+                ip: req.ip,
+                status: 'success',
+                meta: { targetUser: user._id }
+            });
+        } catch (logErr) {
+            console.error('❌ Activity log error:', logErr.message);
+        }
+
         return res.status(200).json({
             success: true,
             message: 'Cập nhật thông tin thành công',
@@ -239,6 +268,20 @@ exports.deleteUser = async (req, res, next) => {
         }
 
         await user.deleteOne();
+
+        // Log activity
+        try {
+            await Activity.create({
+                action: 'Xóa người dùng',
+                user: req.user && req.user._id ? req.user._id : null,
+                userEmail: req.user && req.user.email ? req.user.email : null,
+                ip: req.ip,
+                status: 'success',
+                meta: { targetUser: user._id, email: user.email }
+            });
+        } catch (logErr) {
+            console.error('❌ Activity log error:', logErr.message);
+        }
 
         return res.status(200).json({
             success: true,
@@ -279,6 +322,20 @@ exports.toggleUserLock = async (req, res, next) => {
             user.trangThai === 'hoat_dong' ? 'tam_khoa' : 'hoat_dong';
 
         await user.save();
+
+        // Log activity
+        try {
+            await Activity.create({
+                action: user.trangThai === 'tam_khoa' ? 'Khóa người dùng' : 'Mở khóa người dùng',
+                user: req.user && req.user._id ? req.user._id : null,
+                userEmail: req.user && req.user.email ? req.user.email : null,
+                ip: req.ip,
+                status: 'success',
+                meta: { targetUser: user._id, newStatus: user.trangThai }
+            });
+        } catch (logErr) {
+            console.error('❌ Activity log error:', logErr.message);
+        }
 
         return res.status(200).json({
             success: true,

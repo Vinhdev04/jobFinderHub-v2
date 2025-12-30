@@ -10,6 +10,8 @@ const applicationController = require('../controllers/applicationController');
 const interviewController = require('../controllers/interviewController');
 const notificationController = require('../controllers/notificationController');
 const reportController = require('../controllers/reportController');
+const activityController = require('../controllers/activityController');
+const { protect, authorize } = require('../middleware/auth');
 
 // Middleware (cần tạo sau)
 // const { protect, restrictTo } = require('../middleware/auth');
@@ -85,6 +87,12 @@ router.get('/reports/dashboard', reportController.getDashboardStats); // cần m
 router.get('/reports', reportController.getReports); // cần middleware restrictTo('admin')
 router.get('/reports/:id', reportController.getReportById); // cần middleware restrictTo('admin')
 router.post('/reports/generate', reportController.generateReport); // cần middleware restrictTo('admin')
+
+// =====================
+// ACTIVITY ROUTES
+// =====================
+router.get('/activities', protect, authorize('quan_tri_he_thong'), activityController.getActivities);
+router.get('/activities/export', protect, authorize('quan_tri_he_thong'), activityController.exportActivities);
 
 // Health check
 router.get('/health', (req, res) => {

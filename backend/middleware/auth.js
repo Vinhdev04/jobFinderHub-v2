@@ -18,6 +18,11 @@ exports.protect = async (req, res, next) => {
             token = req.headers.authorization.split(' ')[1];
         }
 
+        // Fallback: allow token in query string for CSV download (short-lived token usage)
+        if (!token && req.query && req.query.token) {
+            token = req.query.token;
+        }
+
         if (!token) {
             return res.status(401).json({
                 success: false,

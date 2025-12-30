@@ -118,6 +118,20 @@ exports.login = async (req, res, next) => {
         }
 
         if (!user) {
+            // Log failed login attempt (no user found)
+            try {
+                const Activity = require('../models/Activity');
+                await Activity.create({
+                    action: 'Đăng nhập thất bại',
+                    userEmail: email,
+                    ip: req.ip,
+                    status: 'error',
+                    meta: { reason: 'user_not_found' }
+                });
+            } catch (logErr) {
+                console.error('❌ Activity log error:', logErr.message);
+            }
+
             return res.status(401).json({
                 success: false,
                 message: 'Email hoặc mật khẩu không đúng'
@@ -128,6 +142,21 @@ exports.login = async (req, res, next) => {
         const isPasswordCorrect = await user.comparePassword(matKhau);
 
         if (!isPasswordCorrect) {
+            // Log failed login due to wrong password
+            try {
+                const Activity = require('../models/Activity');
+                await Activity.create({
+                    action: 'Đăng nhập thất bại',
+                    user: user._id,
+                    userEmail: user.email,
+                    ip: req.ip,
+                    status: 'error',
+                    meta: { reason: 'wrong_password' }
+                });
+            } catch (logErr) {
+                console.error('❌ Activity log error:', logErr.message);
+            }
+
             return res.status(401).json({
                 success: false,
                 message: 'Email hoặc mật khẩu không đúng'
@@ -145,6 +174,20 @@ exports.login = async (req, res, next) => {
         // Cập nhật thời gian đăng nhập cuối
         user.lastLogin = Date.now();
         await user.save({ validateBeforeSave: false });
+
+        // Log activity: successful login
+        try {
+            const Activity = require('../models/Activity');
+            await Activity.create({
+                action: 'Đăng nhập hệ thống',
+                user: user._id,
+                userEmail: user.email,
+                ip: req.ip,
+                status: 'success'
+            });
+        } catch (logErr) {
+            console.error('❌ Activity log error:', logErr.message);
+        }
 
         // Tạo token
         const token = tokenService.signToken(user._id);
