@@ -19,7 +19,7 @@ const Report = require('../models/Report');
 // Connect to database
 const connectDB = async () => {
     try {
-        await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/job-finder');
+        await mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://jobfinder_user:123456Aa@jobfinder-cluster.uftask8.mongodb.net/job-finder?appName=jobfinder-cluster');
         console.log('MongoDB Connected');
     } catch (error) {
         console.error('MongoDB Connection Error:', error);
@@ -46,14 +46,15 @@ const seedData = async () => {
         // ==================== CREATE USERS ====================
         console.log('Creating users...');
         
-        const hashedPassword = await bcrypt.hash('Password123!', 10);
+        // Use a plaintext default password here; the User model will hash it via pre-save middleware
+        const plainPassword = 'Password123!';
 
         const users = await User.create([
             // Admin
             {
                 hoVaTen: 'Admin System',
                 email: 'admin@jobfinder.com',
-                matKhau: hashedPassword,
+                matKhau: plainPassword,
                 soDienThoai: '0901234567',
                 vaiTro: 'quan_tri_he_thong',
                 trangThai: 'hoat_dong'
@@ -62,7 +63,7 @@ const seedData = async () => {
             {
                 hoVaTen: 'Trần Thị Giáo Vụ',
                 email: 'giaovu@school.edu.vn',
-                matKhau: hashedPassword,
+                matKhau: plainPassword,
                 soDienThoai: '0902234567',
                 vaiTro: 'giao_vu',
                 trangThai: 'hoat_dong',
@@ -76,7 +77,7 @@ const seedData = async () => {
             {
                 hoVaTen: 'Nguyễn Văn Tuyển',
                 email: 'recruiter1@techcorp.com',
-                matKhau: hashedPassword,
+                matKhau: plainPassword,
                 soDienThoai: '0903234567',
                 vaiTro: 'nhan_vien_tuyen_dung',
                 trangThai: 'hoat_dong'
@@ -85,7 +86,7 @@ const seedData = async () => {
             {
                 hoVaTen: 'Lê Thị HR',
                 email: 'hr@innovate.vn',
-                matKhau: hashedPassword,
+                matKhau: plainPassword,
                 soDienThoai: '0904234567',
                 vaiTro: 'nhan_vien_tuyen_dung',
                 trangThai: 'hoat_dong'
@@ -94,7 +95,7 @@ const seedData = async () => {
             {
                 hoVaTen: 'Phạm Văn Manager',
                 email: 'manager@startup.io',
-                matKhau: hashedPassword,
+                matKhau: plainPassword,
                 soDienThoai: '0905234567',
                 vaiTro: 'quan_ly_doanh_nghiep',
                 trangThai: 'hoat_dong'
@@ -103,7 +104,7 @@ const seedData = async () => {
             {
                 hoVaTen: 'Trần Minh Anh',
                 email: 'minhanh@student.edu.vn',
-                matKhau: hashedPassword,
+                matKhau: plainPassword,
                 soDienThoai: '0906234567',
                 vaiTro: 'sinh_vien',
                 trangThai: 'hoat_dong',
@@ -119,7 +120,7 @@ const seedData = async () => {
             {
                 hoVaTen: 'Nguyễn Thị Lan',
                 email: 'thilan@student.edu.vn',
-                matKhau: hashedPassword,
+                matKhau: plainPassword,
                 soDienThoai: '0907234567',
                 vaiTro: 'sinh_vien',
                 trangThai: 'hoat_dong',
@@ -135,7 +136,7 @@ const seedData = async () => {
             {
                 hoVaTen: 'Lê Văn Hùng',
                 email: 'vanhung@student.edu.vn',
-                matKhau: hashedPassword,
+                matKhau: plainPassword,
                 soDienThoai: '0908234567',
                 vaiTro: 'sinh_vien',
                 trangThai: 'hoat_dong',

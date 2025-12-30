@@ -5,6 +5,7 @@ import InterviewSchedule from '@features/Recruiter/components/InterviewSchedule'
 import JobPostingCard from '@features/Recruiter/components/JobPostingCard'; // Thêm import cho JobPostingCard (nếu chưa có)
 import StatCard from '@features/Student/components/StatCard'; // Thêm import cho StatCard (bạn cần tạo component này nếu chưa có)
 import { useRecruiterData } from '@features/Recruiter/hooks/useRecruiterData';
+import confirmAction from '@utils/confirmAction';
 import './RecruiterDashboard.css';
 
 const RecruiterDashboard = () => {
@@ -71,10 +72,9 @@ const RecruiterDashboard = () => {
     console.log('Edit job:', job);
   };
 
-  const handleDeleteJob = (job) => {
-    if (window.confirm(`Bạn có chắc muốn xóa "${job.title}"?`)) {
-      deleteJob(job.id);
-    }
+  const handleDeleteJob = async (job) => {
+    const ok = await confirmAction(`Bạn có chắc muốn xóa "${job.title}"?`);
+    if (ok) deleteJob(job.id);
   };
 
   const handleViewApplications = (job) => {
@@ -93,10 +93,9 @@ const RecruiterDashboard = () => {
     console.log('Reschedule interview:', interview);
   };
 
-  const handleCancelInterview = (interview) => {
-    if (window.confirm(`Bạn có chắc muốn hủy lịch phỏng vấn với ${interview.candidateName}?`)) {
-      cancelInterview(interview.id);
-    }
+  const handleCancelInterview = async (interview) => {
+    const ok = await confirmAction(`Bạn có chắc muốn hủy lịch phỏng vấn với ${interview.candidateName}?`);
+    if (ok) cancelInterview(interview.id);
   };
 
   return (

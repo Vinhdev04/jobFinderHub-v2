@@ -76,15 +76,24 @@ exports.verifyToken = (token) => {
  * @returns {Object} User data an toàn
  */
 exports.getUserResponse = (user) => {
+    // Normalize a user object for frontend consumption
+    const avatar = user.anhDaiDien || user.avatar || user.hinhDaiDien || null;
+    const thongTinSinhVien = user.thongTinSinhVien || {};
+    const cv = thongTinSinhVien.cv || null;
+    const hocVan = Array.isArray(thongTinSinhVien.hocVan) ? thongTinSinhVien.hocVan : (user.hocVan || []);
+    const kyNang = Array.isArray(thongTinSinhVien.kyNang) ? thongTinSinhVien.kyNang : (user.kyNang || []);
+
     return {
         _id: user._id,
-        hoTen: user.hoTen,
+        hoVaTen: user.hoVaTen || user.hoTen || user.name || '',
         email: user.email,
-        loaiTaiKhoan: user.loaiTaiKhoan,
-        soDienThoai: user.soDienThoai,
-        diaChi: user.diaChi,
-        hinhDaiDien: user.hinhDaiDien,
-        daXacMinh: user.daXacMinh,
+        soDienThoai: user.soDienThoai || user.phone || '',
+        diaChi: user.diaChi || thongTinSinhVien.diaChi || '',
+        avatar,
+        cv,
+        hocVan,
+        kyNang,
+        vaiTro: user.vaiTro,
         trangThai: user.trangThai,
         createdAt: user.createdAt
     };

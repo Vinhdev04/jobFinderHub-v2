@@ -1,18 +1,16 @@
-/* ApplicationCard.css */
-
+/* ==================== ApplicationCard.css ==================== */
 .application-card {
     background: white;
     border-radius: var(--radius-lg);
-    padding: var(--spacing-lg);
+    padding: var(--spacing-xl);
     box-shadow: var(--shadow-sm);
-    transition: all var(--transition-base);
-    margin-bottom: var(--spacing-md);
     border: 1px solid var(--color-gray-200);
+    transition: all var(--transition-base);
 }
 
 .application-card:hover {
-    box-shadow: var(--shadow-md);
-    transform: translateX(4px);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-4px);
     border-color: var(--color-primary-light);
 }
 
@@ -20,28 +18,34 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
     gap: var(--spacing-md);
 }
 
 .application-card__company {
     display: flex;
+    align-items: center;
     gap: var(--spacing-md);
     flex: 1;
     min-width: 0;
 }
 
 .application-card__logo {
-    width: 56px;
-    height: 56px;
+    width: 48px;
+    height: 48px;
     border-radius: var(--radius-md);
     overflow: hidden;
     flex-shrink: 0;
-    background: var(--color-gray-100);
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--color-gray-200);
+    background: var(--color-gray-100);
+    border: 2px solid var(--color-gray-200);
+    transition: all var(--transition-fast);
+}
+
+.application-card:hover .application-card__logo {
+    border-color: var(--color-primary);
 }
 
 .application-card__logo img {
@@ -78,7 +82,7 @@
 }
 
 .application-card__status {
-    padding: var(--spacing-xs) var(--spacing-md);
+    padding: var(--spacing-xs) var(--spacing-sm);
     border-radius: var(--radius-md);
     font-size: var(--font-size-xs);
     font-weight: 600;
@@ -108,12 +112,13 @@
 
 .application-card__details {
     display: flex;
-    flex-wrap: wrap;
-    gap: var(--spacing-lg);
-    padding: var(--spacing-md) 0;
-    border-top: 1px solid var(--color-gray-200);
-    border-bottom: 1px solid var(--color-gray-200);
-    margin-bottom: var(--spacing-md);
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+    padding: var(--spacing-md);
+    background: var(--color-gray-50);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-gray-200);
 }
 
 .application-card__detail-item {
@@ -124,17 +129,19 @@
 }
 
 .application-card__detail-icon {
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-lg);
+    flex-shrink: 0;
 }
 
 .application-card__detail-label {
     color: var(--color-gray-600);
     font-weight: 500;
+    min-width: 40px;
 }
 
 .application-card__detail-value {
     color: var(--color-gray-900);
-    font-weight: 600;
+    font-weight: 500;
 }
 
 .application-card__actions {
@@ -143,14 +150,14 @@
 }
 
 .application-card__btn {
+    flex: 1;
     padding: var(--spacing-sm) var(--spacing-lg);
     border-radius: var(--radius-md);
     font-size: var(--font-size-sm);
     font-weight: 600;
-    border: none;
     cursor: pointer;
     transition: all var(--transition-fast);
-    flex: 1;
+    border: none;
 }
 
 .application-card__btn--primary {
@@ -161,7 +168,11 @@
 .application-card__btn--primary:hover {
     background: var(--color-primary-dark);
     transform: translateY(-2px);
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow-md);
+}
+
+.application-card__btn--primary:active {
+    transform: translateY(0);
 }
 
 .application-card__btn--secondary {
@@ -175,11 +186,6 @@
     border-color: var(--color-gray-400);
 }
 
-.application-card__btn:active {
-    transform: translateY(0);
-}
-
-/* Responsive */
 @media (max-width: 768px) {
     .application-card {
         padding: var(--spacing-md);
@@ -187,24 +193,11 @@
 
     .application-card__header {
         flex-direction: column;
+        gap: var(--spacing-sm);
     }
 
     .application-card__status {
         align-self: flex-start;
-    }
-
-    .application-card__logo {
-        width: 48px;
-        height: 48px;
-    }
-
-    .application-card__position {
-        font-size: var(--font-size-base);
-    }
-
-    .application-card__details {
-        flex-direction: column;
-        gap: var(--spacing-sm);
     }
 
     .application-card__actions {
@@ -213,20 +206,5 @@
 
     .application-card__btn {
         width: 100%;
-    }
-}
-
-@media (max-width: 480px) {
-    .application-card {
-        padding: var(--spacing-sm);
-    }
-
-    .application-card__logo {
-        width: 40px;
-        height: 40px;
-    }
-
-    .application-card__position {
-        font-size: var(--font-size-sm);
     }
 }

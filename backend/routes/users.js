@@ -12,7 +12,8 @@ const {
     deleteUser,
     toggleUserLock,
     getUserStats,
-    uploadAvatar
+    uploadAvatar,
+    uploadCV
 } = require('../controller/userController'); // ✅ FIX: controllers (số nhiều)
 
 // ============================================
@@ -57,11 +58,32 @@ const storage = multer.diskStorage({
     }
 });
 const upload = multer({ storage });
-router.post('/upload-avatar', upload.single('avatar'), protect, uploadAvatar);
+router.post('/upload-avatar', upload.single('avatar'), uploadAvatar);
+
+// Upload CV (student)
+const cvsDir = path.join(__dirname, '..', 'public', 'uploads', 'cvs');
+try { fs.mkdirSync(cvsDir, { recursive: true }); } catch (err) { /* ignore */ }
+const storageCvs = multer.diskStorage({
+    destination: function (req, file, cb) { cb(null, cvsDir); },
+    filename: function (req, file, cb) {
+        const ext = path.extname(file.originalname);
+        cb(null, `${Date.now()}-${Math.round(Math.random()*1e9)}${ext}`);
+    }
+});
+const uploadCvMiddleware = multer({ storage: storageCvs });
+router.post('/upload-cv', uploadCvMiddleware.single('cv'), uploadCV);
 
 // ============================================
 // ADMIN ONLY ROUTES
 // ============================================
+
+/**
+ * @route   POST /api/users
+ * @desc    Tạo người dùng (Admin only)
+ * @access  Private (Admin)
+ */
+router.post('/', authorize('quan_tri_he_thong'), require('../controller/userController').createUser);
+
 
 /**
  * @route   PUT /api/users/:id

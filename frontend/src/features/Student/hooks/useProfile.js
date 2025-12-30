@@ -1,6 +1,7 @@
 // ==================== hooks/useProfile.js ====================
 import { useState, useEffect } from 'react';
 import api from '@services/api';
+import { normalizeUser } from '@utils/normalizeUser';
 
 export const useProfile = () => {
     const [profile, setProfile] = useState(null);
@@ -19,21 +20,21 @@ export const useProfile = () => {
             const res = await api.get('/auth/me');
             // backend returns { success: true, user }
             if (res && res.success && res.user) {
-                const u = res.user;
+                const u = normalizeUser(res.user) || res.user;
                 setProfile({
-                    id: u._id || u.id,
-                    name: u.hoVaTen || u.name || u.ho_ten || u.ten || '',
-                    email: u.email,
-                    phone: u.soDienThoai || u.phone,
-                    birthDate: u.ngaySinh || u.birthDate,
-                    address: u.diaChi || u.address,
-                    major: u.chuyenNganh || u.major,
-                    avatar: u.avatar || null
+                    id: u.id || u._id,
+                    name: u.hoVaTen || '',
+                    email: u.email || '',
+                    phone: u.soDienThoai || '',
+                    birthDate: u.birthDate || null,
+                    address: u.diaChi || '',
+                    major: u.major || '',
+                    avatar: u.avatar || null,
+                    cv: u.cv || null
                 });
 
-                // If backend exposes education/skills on user, use them
-                if (u.hocVan) setEducation(u.hocVan);
-                if (u.kyNang) setSkills(u.kyNang);
+                setEducation(Array.isArray(u.hocVan) ? u.hocVan : []);
+                setSkills(Array.isArray(u.kyNang) ? u.kyNang : []);
             } else {
                 // fallback to empty
                 setProfile(null);
@@ -56,9 +57,9 @@ export const useProfile = () => {
             const res = await api.postForm('/users/upload-avatar', formData);
             // backend returns { success: true, user }
             if (res && res.success && res.user) {
-                const u = res.user;
-                setProfile((prev) => ({ ...prev, avatar: u.avatar || u.hinhDaiDien || prev?.avatar }));
-                return { success: true, user: u };
+                // refresh full profile from server
+                await fetchProfile();
+                return { success: true, user: res.user };
             } else {
                 // fallback to local preview
                 const reader = new FileReader();
@@ -72,13 +73,29 @@ export const useProfile = () => {
         }
     };
 
+    const updateCV = async (file) => {
+        const formData = new FormData();
+        formData.append('cv', file);
+        try {
+            const res = await api.postForm('/users/upload-cv', formData);
+            if (res && res.success && res.user) {
+                await fetchProfile();
+                return { success: true, user: res.user };
+            }
+            return { success: false };
+        } catch (err) {
+            console.error('Failed to upload CV:', err);
+            return { success: false, error: err };
+        }
+    };
+
     const updateProfile = async (updates) => {
         try {
             const res = await api.put('/auth/update-profile', updates);
             if (res && res.success && res.user) {
-                const u = res.user;
-                setProfile((prev) => ({ ...prev, name: u.hoVaTen || u.name || prev?.name }));
-                return { success: true, user: u };
+                // refresh profile and derived lists from server
+                await fetchProfile();
+                return { success: true, user: res.user };
             }
             return { success: false };
         } catch (err) {
@@ -91,9 +108,8 @@ export const useProfile = () => {
         try {
             if (!skills.includes(skill)) {
                 const newSkills = [...skills, skill];
-                // persist to backend via update-profile endpoint
                 await updateProfile({ kyNang: newSkills });
-                setSkills(newSkills);
+                await fetchProfile();
             }
         } catch (err) {
             console.error('Failed to add skill:', err);
@@ -104,7 +120,7 @@ export const useProfile = () => {
         try {
             const newSkills = skills.filter((s) => s !== skill);
             await updateProfile({ kyNang: newSkills });
-            setSkills(newSkills);
+            await fetchProfile();
         } catch (err) {
             console.error('Failed to remove skill:', err);
         }
@@ -114,7 +130,7 @@ export const useProfile = () => {
         try {
             const newEdu = [...(education || []), edu];
             await updateProfile({ hocVan: newEdu });
-            setEducation(newEdu);
+            await fetchProfile();
         } catch (err) {
             console.error('Failed to add education:', err);
         }
@@ -129,6 +145,7 @@ export const useProfile = () => {
         addSkill,
         removeSkill,
         addEducation,
+        updateCV,
         refetch: fetchProfile,
         updateProfile
     };

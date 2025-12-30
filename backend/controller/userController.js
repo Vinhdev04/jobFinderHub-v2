@@ -1,7 +1,71 @@
 // backend/controllers/userController.js
 const User = require('../models/User');
+const authService = require('../services/authService');
+const { AppError } = require('../middleware/errorHandler');
+const sendEmail = require('../utils/sendEmail');
 const path = require('path');
 const fs = require('fs');
+
+/**
+ * @desc    Tạo user mới (Admin only)
+ * @route   POST /api/users
+ * @access  Private (Admin)
+ */
+exports.createUser = async (req, res, next) => {
+    try {
+        const { hoVaTen, email, matKhau, soDienThoai, vaiTro, trangThai } = req.body;
+
+        if (!hoVaTen || !email) {
+            return next(new AppError('Thiếu thông tin bắt buộc', 400));
+        }
+
+        // Check existing
+        const existing = await User.findOne({ email });
+        if (existing) {
+            return next(new AppError('Email đã tồn tại', 400));
+        }
+
+        // If admin didn't provide a password, generate a temporary one
+        const tempPassword = matKhau || Math.random().toString(36).slice(-8) + 'A1!';
+
+        // Validate password strength (only check if admin provided one)
+        const pwdCheck = authService.validatePasswordStrength(tempPassword);
+        if (!pwdCheck.isStrong) {
+            return next(new AppError(pwdCheck.message, 400));
+        }
+
+        const hashed = await authService.hashPassword(tempPassword);
+
+        const userData = {
+            hoVaTen,
+            email,
+            matKhau: hashed,
+            soDienThoai: soDienThoai || '',
+            vaiTro: vaiTro || 'sinh_vien',
+            trangThai: trangThai || 'hoat_dong'
+        };
+
+        const user = await User.create(userData);
+
+        // Send welcome email with temporary password asynchronously only if requested
+        if (req.body.sendWelcome !== false) {
+            setImmediate(async () => {
+                try {
+                    await sendEmail.sendWelcomeWithPassword(email, hoVaTen, tempPassword);
+                    console.log('✅ Welcome email (with temp password) sent');
+                } catch (emailErr) {
+                    console.error('❌ Error sending welcome email:', emailErr.message);
+                }
+            });
+        }
+
+        const normalized = require('../services/authService').getUserResponse(user);
+        return res.status(201).json({ success: true, message: 'Tạo người dùng thành công', data: normalized });
+    } catch (error) {
+        console.error('❌ CreateUser error:', error);
+        next(error);
+    }
+};
 
 /**
  * @desc    Lấy tất cả users (Admin/Giáo vụ only)
@@ -304,12 +368,44 @@ exports.uploadAvatar = async (req, res, next) => {
         if (!user) return res.status(404).json({ success: false, message: 'Không tìm thấy user' });
 
         const relPath = `/uploads/avatars/${req.file.filename}`;
-        user.avatar = relPath;
+        // Save to schema field `anhDaiDien`
+        user.anhDaiDien = relPath;
         await user.save();
 
-        return res.status(200).json({ success: true, message: 'Cập nhật avatar thành công', user });
+        const normalized = require('../services/authService').getUserResponse(user);
+        return res.status(200).json({ success: true, message: 'Cập nhật avatar thành công', user: normalized });
     } catch (err) {
         console.error('❌ UploadAvatar error:', err);
+        next(err);
+    }
+};
+
+/**
+ * @desc Upload CV for current student
+ * @route POST /api/users/upload-cv
+ * @access Private (sinh_vien)
+ */
+exports.uploadCV = async (req, res, next) => {
+    try {
+        if (!req.file) return res.status(400).json({ success: false, message: 'Không có file' });
+
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ success: false, message: 'Không tìm thấy user' });
+
+        const relPath = `/uploads/cvs/${req.file.filename}`;
+        if (!user.thongTinSinhVien) user.thongTinSinhVien = {};
+        user.thongTinSinhVien.cv = {
+            tenFile: req.file.originalname,
+            duongDan: relPath,
+            capNhatLuc: new Date()
+        };
+
+        await user.save();
+
+        const normalized = require('../services/authService').getUserResponse(user);
+        return res.status(200).json({ success: true, message: 'Cập nhật CV thành công', user: normalized });
+    } catch (err) {
+        console.error('❌ UploadCV error:', err);
         next(err);
     }
 };

@@ -15,6 +15,7 @@ import {
     useInterviews,
     useProfile
 } from '@features/Student/hooks';
+import api from '@services/api';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@hooks/useToast.jsx';
 import './StudentDashboard.css';
@@ -48,6 +49,8 @@ const StudentDashboard = () => {
         updateAvatar,
         addSkill,
         removeSkill,
+        addEducation,
+        updateCV,
         updateProfile
     } = useProfile();
     const navigate = useNavigate();
@@ -394,11 +397,32 @@ const StudentDashboard = () => {
                                 CV của bạn
                             </h2>
                             <CVPreview
-                                fileName='CV_NguyenVanA.pdf'
-                                uploadDate='10/01/2024'
-                                fileSize='2.5 MB'
-                                onDownload={() => console.log('Download CV')}
-                                onReplace={() => console.log('Replace CV')}
+                                fileName={profile?.cv?.tenFile || 'Chưa có CV'}
+                                uploadDate={profile?.cv?.capNhatLuc ? new Date(profile.cv.capNhatLuc).toLocaleDateString() : '—'}
+                                fileSize={'—'}
+                                onDownload={() => {
+                                    const rel = profile?.cv?.duongDan;
+                                    if (!rel) return;
+                                    const serverBase = api.defaults.baseURL.replace(/\/api$/i, '');
+                                    const url = rel.startsWith('http') ? rel : `${serverBase}${rel}`;
+                                    window.open(url, '_blank');
+                                }}
+                                onReplace={() => {
+                                    const input = document.createElement('input');
+                                    input.type = 'file';
+                                    input.accept = '.pdf,.doc,.docx';
+                                    input.onchange = async (e) => {
+                                        const file = e.target.files[0];
+                                        if (!file) return;
+                                        const res = await updateCV(file);
+                                        if (res && res.success) {
+                                            toast.success('CV đã được cập nhật');
+                                        } else {
+                                            toast.error('Cập nhật CV thất bại');
+                                        }
+                                    };
+                                    input.click();
+                                }}
                             />
                         </div>
                     </div>

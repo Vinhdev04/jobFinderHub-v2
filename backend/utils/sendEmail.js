@@ -14,7 +14,7 @@ const nodemailer = require('nodemailer');
 
 // Tạo transporter
 const createTransporter = () => {
-    return nodemailer.createTransporter({
+    return nodemailer.createTransport({
         host: process.env.EMAIL_HOST,
         port: process.env.EMAIL_PORT,
         secure: false,
@@ -49,6 +49,38 @@ exports.sendWelcomeEmail = async (email, hoVaTen) => {
                 <p style="color: #6b7280; font-size: 14px;">
                     Nếu bạn không đăng ký tài khoản này, vui lòng bỏ qua email này.
                 </p>
+            </div>
+        `
+    };
+
+    await transporter.sendMail(mailOptions);
+};
+
+/**
+ * Gửi email chào mừng kèm mật khẩu tạm thời (khi admin tạo tài khoản)
+ */
+exports.sendWelcomeWithPassword = async (email, hoVaTen, tempPassword) => {
+    const transporter = createTransporter();
+
+    const mailOptions = {
+        from: process.env.EMAIL_FROM,
+        to: email,
+        subject: 'Tài khoản JobFinderHub đã được tạo',
+        html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #14b8a6;">Chào mừng ${hoVaTen}!</h2>
+                <p>Tài khoản của bạn đã được tạo bởi quản trị viên.</p>
+                <p>Thông tin đăng nhập tạm thời:</p>
+                <div style="background: #f3f4f6; padding: 12px; border-radius: 6px; margin: 12px 0;">
+                    <p><strong>Email:</strong> ${email}</p>
+                    <p><strong>Mật khẩu tạm:</strong> <code>${tempPassword}</code></p>
+                </div>
+                <p>Vui lòng đăng nhập và đổi mật khẩu ngay sau khi đăng nhập.</p>
+                <a href="${process.env.FRONTEND_URL}/login" 
+                   style="display: inline-block; padding: 12px 24px; background: #14b8a6; 
+                          color: white; text-decoration: none; border-radius: 8px; margin-top: 16px;">
+                    Đăng nhập ngay
+                </a>
             </div>
         `
     };

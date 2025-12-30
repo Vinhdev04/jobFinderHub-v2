@@ -28,15 +28,32 @@ export const useApplications = (statusFilter = 'all') => {
             const res = await api.get(`/applications/candidate/${studentId}${query}`);
             if (res && res.success && Array.isArray(res.data)) {
                 // Normalize fields expected by StudentDashboard
-                const apps = res.data.map((a) => ({
-                    id: a._id || a.id,
-                    company: a.tinTuyenDung?.congTy?.tenCongTy || a.tinTuyenDung?.congTy || 'Công ty',
-                    position: a.tinTuyenDung?.tieuDe || a.tinTuyenDung?.viTri || 'Vị trí',
-                    logo: a.tinTuyenDung?.congTy?.logo || null,
-                    submittedDate: a.ngayNop || a.createdAt || '',
-                    interviewDate: a.lichPhongVan?.[0]?.ngay || a.lichPhongVan || null,
-                    status: a.trangThai || a.status || 'pending'
-                }));
+                const apps = res.data.map((a) => {
+                    const companyObj = a.tinTuyenDung?.congTy;
+                    let companyName = 'Công ty';
+                    let logo = null;
+                    if (companyObj) {
+                        if (typeof companyObj === 'string') {
+                            companyName = companyObj;
+                        } else if (typeof companyObj === 'object') {
+                            companyName = companyObj.tenCongTy || companyObj.tenRutGon || companyObj.name || companyObj.email || 'Công ty';
+                            logo = companyObj.logo || null;
+                        }
+                    }
+
+                    const tin = a.tinTuyenDung || {};
+                    const position = tin.tieuDe || (tin.viTri && (typeof tin.viTri === 'string' ? tin.viTri : tin.viTri.ten)) || 'Vị trí';
+
+                    return {
+                        id: a._id || a.id,
+                        company: companyName,
+                        position,
+                        logo,
+                        submittedDate: a.ngayNop || a.createdAt || '',
+                        interviewDate: a.lichPhongVan?.[0]?.ngay || a.lichPhongVan || null,
+                        status: a.trangThai || a.status || 'pending'
+                    };
+                });
                 setApplications(apps);
             } else {
                 setApplications([]);

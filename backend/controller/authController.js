@@ -110,7 +110,12 @@ exports.login = async (req, res, next) => {
             query.vaiTro = vaiTro;
         }
 
-        const user = await User.findOne(query).select('+matKhau');
+        // Try to find user by email+role (if provided). If not found and a role was provided,
+        // fall back to finding by email only so users aren't blocked by an incorrect role selection in the UI.
+        let user = await User.findOne(query).select('+matKhau');
+        if (!user && vaiTro) {
+            user = await User.findOne({ email }).select('+matKhau');
+        }
 
         if (!user) {
             return res.status(401).json({
@@ -164,21 +169,13 @@ exports.login = async (req, res, next) => {
  */
 exports.getMe = async (req, res, next) => {
     try {
-        const user = await User.findById(req.user.id)
-            .populate('congTy')
-            .select('-matKhau');
-
+        const user = await User.findById(req.user.id).populate('congTy').select('-matKhau');
         if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: 'Không tìm thấy user'
-            });
+            return res.status(404).json({ success: false, message: 'Không tìm thấy user' });
         }
 
-        return res.status(200).json({
-            success: true,
-            user
-        });
+        const normalized = require('../services/authService').getUserResponse(user);
+        return res.status(200).json({ success: true, user: normalized });
 
     } catch (error) {
         console.error('❌ GetMe error:', error);
@@ -385,12 +382,13 @@ exports.updateProfile = async (req, res, next) => {
         if (hoVaTen) user.hoVaTen = hoVaTen;
         if (soDienThoai) user.soDienThoai = soDienThoai;
 
-        // Optional: persist skills and education
+        // Optional: persist skills and education into thongTinSinhVien
+        if (!user.thongTinSinhVien) user.thongTinSinhVien = user.thongTinSinhVien || {};
         if (Array.isArray(kyNang)) {
-            user.kyNang = kyNang;
+            user.thongTinSinhVien.kyNang = kyNang;
         }
         if (Array.isArray(hocVan)) {
-            user.hocVan = hocVan;
+            user.thongTinSinhVien.hocVan = hocVan;
         }
 
         if (user.vaiTro === 'sinh_vien' && diaChi) {
@@ -402,11 +400,8 @@ exports.updateProfile = async (req, res, next) => {
 
         await user.save();
 
-        return res.status(200).json({
-            success: true,
-            message: 'Cập nhật thông tin thành công',
-            user: authService.getUserResponse(user)
-        });
+        const normalized = require('../services/authService').getUserResponse(user);
+        return res.status(200).json({ success: true, message: 'Cập nhật thông tin thành công', user: normalized });
 
     } catch (error) {
         console.error('❌ UpdateProfile error:', error);

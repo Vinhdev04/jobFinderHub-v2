@@ -58,6 +58,9 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/applications', require('./routes/applications'));
 
+// Serve uploaded files (avatars, cvs)
+app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
+
 // ========================
 // CONTROLLERS - ✅ FIXED: controllers/ thay vì controller/
 // ========================

@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react';
 import authService from '@services/authService';
+import { normalizeUser } from '@utils/normalizeUser';
 
 export const AuthContext = createContext();
 
@@ -15,9 +16,10 @@ export const AuthProvider = ({ children }) => {
             try {
                 const storedUser = authService.getCurrentUser();
                 const token = authService.getToken();
-
                 if (storedUser && token) {
-                    setUser(storedUser);
+                    // ensure stored user is normalized
+                    const norm = normalizeUser(storedUser) || storedUser;
+                    setUser(norm);
                     setIsAuthenticated(true);
                     
                     // Optional: Verify token với backend
@@ -56,7 +58,8 @@ export const AuthProvider = ({ children }) => {
             const response = await authService.login(backendCredentials);
 
             if (response.success) {
-                setUser(response.user);
+                const norm = normalizeUser(response.user) || response.user;
+                setUser(norm);
                 setIsAuthenticated(true);
                 return { success: true, user: response.user };
             }
@@ -86,7 +89,8 @@ export const AuthProvider = ({ children }) => {
             const response = await authService.register(backendUserData);
 
             if (response.success) {
-                setUser(response.user);
+                const norm = normalizeUser(response.user) || response.user;
+                setUser(norm);
                 setIsAuthenticated(true);
                 return { success: true, user: response.user };
             }

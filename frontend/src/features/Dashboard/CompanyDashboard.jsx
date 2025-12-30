@@ -3,6 +3,7 @@ import CompanyBanner from '@features/Company/components/CompanyBanner';
 import RecruiterCard from '@features/Company/components/RecruiterCard';
 import ApplicationTable from '@features/Company/components/ApplicationTable';
 import { useCompanyData } from '@features/Company/hooks/useCompanyData';
+import confirmAction from '@utils/confirmAction';
 import './CompanyDashboard.css';
 import StatCard from '@features/Student/components/StatCard';
 const CompanyDashboard = () => {
@@ -49,10 +50,9 @@ const CompanyDashboard = () => {
     console.log('Edit recruiter:', recruiter);
   };
 
-  const handleDeleteRecruiter = (recruiter) => {
-    if (window.confirm(`Bạn có chắc muốn xóa ${recruiter.name}?`)) {
-      deleteRecruiter(recruiter.id);
-    }
+  const handleDeleteRecruiter = async (recruiter) => {
+    const ok = await confirmAction(`Bạn có chắc muốn xóa ${recruiter.name}?`);
+    if (ok) deleteRecruiter(recruiter.id);
   };
 
   const handleViewApplication = (app) => {

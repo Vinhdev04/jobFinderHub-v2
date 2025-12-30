@@ -10,6 +10,7 @@ const connectDB = async () => {
         // ✅ CHỈ GIỮ OPTION HỢP LỆ
         const options = {
             serverSelectionTimeoutMS: 5000,
+            tlsAllowInvalidCertificates: false,
             maxPoolSize: 10,
             minPoolSize: 2,
             socketTimeoutMS: 45000
@@ -49,15 +50,11 @@ const connectDB = async () => {
         return conn;
 
     } catch (error) {
-        console.error(`
-╔════════════════════════════════════════╗
-║     ❌ MongoDB Connection Failed       ║
-╠════════════════════════════════════════╣
-║ Error: ${error.message}
-║ MongoDB URI: ${process.env.MONGODB_URI}
-╚════════════════════════════════════════╝
-        `);
-        process.exit(1);
+        console.error(`\n╔════════════════════════════════════════╗\n║     ❌ MongoDB Connection Failed       ║\n╠════════════════════════════════════════╣\n║ Error: ${error.message}\n║ MongoDB URI: ${process.env.MONGODB_URI}\n╚════════════════════════════════════════╝\n        `);
+        // Do not exit the process here so the server can start for local UI debugging.
+        // Return null to indicate no active DB connection. DB-dependent routes should
+        // handle missing connection gracefully in development.
+        return null;
     }
 };
 

@@ -40,6 +40,18 @@ const userService = {
     },
 
     /**
+     * Tạo user mới (Admin)
+     */
+    createUser: async (userData) => {
+        try {
+            const response = await api.post('/users', userData);
+            return response;
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    /**
      * Xóa user
      */
     deleteUser: async (userId) => {

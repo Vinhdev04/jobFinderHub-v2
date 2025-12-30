@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './EducationModal.css';
+import '../styles/EducationModal.css';
 
 const EducationModal = ({ open, onClose, onSave }) => {
     const [school, setSchool] = useState('');

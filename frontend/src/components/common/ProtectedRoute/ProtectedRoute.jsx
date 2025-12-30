@@ -1,12 +1,11 @@
 // src/components/common/ProtectedRoute.jsx
 
 import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@hooks/useAuth';
 
 const ProtectedRoute = ({ children, requiredRole = null }) => {
     const { isAuthenticated, user, loading } = useAuth();
-    const location = useLocation();
 
     // Show loading state while checking authentication
     if (loading) {
@@ -17,14 +16,26 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
         );
     }
 
-    // Redirect to login if not authenticated
+    // If not authenticated, show a friendly message with a login link
     if (!isAuthenticated) {
-        return <Navigate to='/login' state={{ from: location }} replace />;
+        return (
+            <div className='protected-placeholder' style={{padding: '3rem', textAlign: 'center'}}>
+                <h2>Bạn cần đăng nhập để xem trang này</h2>
+                <p>Vui lòng đăng nhập để tiếp tục.</p>
+                <Link to='/login' className='btn btn-primary'>Đăng nhập</Link>
+            </div>
+        );
     }
 
     // Check role if required
-    if (requiredRole && user?.role !== requiredRole) {
-        return <Navigate to='/' replace />;
+    if (requiredRole && user?.vaiTro !== requiredRole) {
+        return (
+            <div className='protected-placeholder' style={{padding: '3rem', textAlign: 'center'}}>
+                <h2>Không có quyền truy cập</h2>
+                <p>Tài khoản của bạn không có quyền xem trang này.</p>
+                <Link to='/' className='btn btn-secondary'>Về trang chủ</Link>
+            </div>
+        );
     }
 
     return children;

@@ -1,9 +1,11 @@
 // frontend/src/features/Admin/components/UsersTable.jsx
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Users, Edit2, Lock, Unlock, Trash2, MoreVertical, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Edit2, Lock, Unlock, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import userService from '@services/userService';
 import { useToast } from '@hooks/useToast';
+import confirmAction from '@utils/confirmAction';
 import '../styles/UserTable.css';
+import UserForm from './UserForm';
 
 const UsersTable = () => {
     const [users, setUsers] = useState([]);
@@ -20,6 +22,8 @@ const UsersTable = () => {
         status: ''
     });
     const { toast } = useToast();
+    const [showForm, setShowForm] = useState(false);
+    const [editingUser, setEditingUser] = useState(null);
 
     // Load users
     useEffect(() => {
@@ -85,9 +89,8 @@ const UsersTable = () => {
 
     // Handle delete
     const handleDelete = async (userId, userName) => {
-        if (!window.confirm(`Bạn có chắc muốn xóa người dùng "${userName}"?`)) {
-            return;
-        }
+        const ok = await confirmAction(`Bạn có chắc muốn xóa người dùng "${userName}"?`);
+        if (!ok) return;
 
         try {
             const response = await userService.deleteUser(userId);
@@ -98,6 +101,16 @@ const UsersTable = () => {
         } catch (error) {
             toast.error(error.message || 'Không thể xóa người dùng');
         }
+    };
+
+    const openCreate = () => {
+        setEditingUser(null);
+        setShowForm(true);
+    };
+
+    const openEdit = (user) => {
+        setEditingUser(user);
+        setShowForm(true);
     };
 
     // Handle pagination
@@ -157,42 +170,48 @@ const UsersTable = () => {
         <div className='users-section'>
             <div className='section-header'>
                 <h3 className='card-title'>Quản lý người dùng</h3>
-                <div className='search-bar'>
-                    <div className='search-input'>
-                        <Search />
-                        <input
-                            type='text'
-                            placeholder='Tìm kiếm người dùng...'
-                            value={filters.search}
-                            onChange={handleSearch}
-                        />
-                    </div>
-                    
-                    {/* Role Filter */}
-                    <select
-                        className='filter-select'
-                        value={filters.role}
-                        onChange={(e) => handleFilter('role', e.target.value)}
-                    >
-                        <option value=''>Tất cả vai trò</option>
-                        <option value='sinh_vien'>Sinh viên</option>
-                        <option value='giao_vu'>Giáo vụ</option>
-                        <option value='nhan_vien_tuyen_dung'>NV Tuyển dụng</option>
-                        <option value='quan_ly_doanh_nghiep'>Quản lý DN</option>
-                        <option value='quan_tri_he_thong'>Quản trị viên</option>
-                    </select>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <button className='btn btn-primary' onClick={openCreate}>
+                        Thêm người dùng
+                    </button>
 
-                    {/* Status Filter */}
-                    <select
-                        className='filter-select'
-                        value={filters.status}
-                        onChange={(e) => handleFilter('status', e.target.value)}
-                    >
-                        <option value=''>Tất cả trạng thái</option>
-                        <option value='hoat_dong'>Hoạt động</option>
-                        <option value='tam_khoa'>Tạm khóa</option>
-                        <option value='khoa'>Khóa</option>
-                    </select>
+                    <div className='search-bar'>
+                        <div className='search-input'>
+                            <Search />
+                            <input
+                                type='text'
+                                placeholder='Tìm kiếm người dùng...'
+                                value={filters.search}
+                                onChange={handleSearch}
+                            />
+                        </div>
+
+                        {/* Role Filter */}
+                        <select
+                            className='filter-select'
+                            value={filters.role}
+                            onChange={(e) => handleFilter('role', e.target.value)}
+                        >
+                            <option value=''>Tất cả vai trò</option>
+                            <option value='sinh_vien'>Sinh viên</option>
+                            <option value='giao_vu'>Giáo vụ</option>
+                            <option value='nhan_vien_tuyen_dung'>NV Tuyển dụng</option>
+                            <option value='quan_ly_doanh_nghiep'>Quản lý DN</option>
+                            <option value='quan_tri_he_thong'>Quản trị viên</option>
+                        </select>
+
+                        {/* Status Filter */}
+                        <select
+                            className='filter-select'
+                            value={filters.status}
+                            onChange={(e) => handleFilter('status', e.target.value)}
+                        >
+                            <option value=''>Tất cả trạng thái</option>
+                            <option value='hoat_dong'>Hoạt động</option>
+                            <option value='tam_khoa'>Tạm khóa</option>
+                            <option value='khoa'>Khóa</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -247,7 +266,7 @@ const UsersTable = () => {
                                         <button
                                             className='icon-btn'
                                             title='Chỉnh sửa'
-                                            onClick={() => {/* TODO: Implement edit */}}
+                                            onClick={() => openEdit(user)}
                                         >
                                             <Edit2 size={16} />
                                         </button>
@@ -288,9 +307,9 @@ const UsersTable = () => {
                         <ChevronLeft size={16} />
                         Trước
                     </button>
-                    
+
                     <div className='pagination-info'>
-                        Trang {pagination.page} / {pagination.pages} 
+                        Trang {pagination.page} / {pagination.pages}
                         <span style={{ marginLeft: '1rem', color: '#6b7280' }}>
                             (Tổng: {pagination.total} người dùng)
                         </span>
@@ -306,6 +325,14 @@ const UsersTable = () => {
                     </button>
                 </div>
             )}
+
+            {/* User form modal */}
+            <UserForm
+                isOpen={showForm}
+                onClose={() => setShowForm(false)}
+                initialData={editingUser}
+                onSaved={() => loadUsers()}
+            />
         </div>
     );
 };

@@ -1,4 +1,5 @@
 import api from './api';
+import { normalizeUser } from '@utils/normalizeUser';
 
 /**
  * Đăng ký tài khoản mới
@@ -17,7 +18,8 @@ export const login = async (credentials) => {
     // Lưu token và user info vào localStorage
     if (response.success && response.token) {
         localStorage.setItem('token', response.token);
-        localStorage.setItem('user', JSON.stringify(response.user));
+           const norm = normalizeUser(response.user);
+           localStorage.setItem('user', JSON.stringify(norm));
     }
     
     return response;
@@ -36,6 +38,10 @@ export const logout = () => {
  */
 export const getMe = async () => {
     const response = await api.get('/auth/me');
+    if (response && response.success && response.user) {
+        // normalize and return
+        return { ...response, user: normalizeUser(response.user) };
+    }
     return response;
 };
 
@@ -90,8 +96,9 @@ export const updateProfile = async (profileData) => {
     
     // Cập nhật user info trong localStorage
     if (response.success && response.user) {
-        const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-        const updatedUser = { ...currentUser, ...response.user };
+           const norm = normalizeUser(response.user);
+           const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
+           const updatedUser = { ...(currentUser || {}), ...norm };
         localStorage.setItem('user', JSON.stringify(updatedUser));
     }
     

@@ -2,10 +2,10 @@
 
 .stat-card {
   background: white;
-  padding: 1.5rem;
-  border-radius: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s;
+  padding: 1.25rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
   position: relative;
   overflow: hidden;
 }
@@ -17,12 +17,12 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #14b8a6, #0d9488);
+  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-dark));
 }
 
 .stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
 }
 
 .stat-header {
@@ -40,6 +40,7 @@
   align-items: center;
   justify-content: center;
   color: white;
+  flex-shrink: 0;
 }
 
 .stat-icon.teal {
@@ -59,10 +60,10 @@
 }
 
 .stat-value {
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: 700;
-  color: #111827;
-  margin-bottom: 0.5rem;
+  color: var(--color-gray-900);
+  margin-bottom: 0.25rem;
 }
 
 .stat-label {

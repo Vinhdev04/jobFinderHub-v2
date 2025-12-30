@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './SkillModal.css';
+import '../styles/SkillModal.css';
 
 const SkillModal = ({ open, onClose, onSave }) => {
     const [skill, setSkill] = useState('');
