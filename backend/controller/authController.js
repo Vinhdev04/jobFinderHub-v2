@@ -1,20 +1,18 @@
-// backend/controller/authController.js
+// backend/controllers/authController.js
 const User = require('../models/User');
-const jwt = require('jsonwebtoken');
+const authService = require('../services/authService');
+const tokenService = require('../services/tokenService');
+const sendEmail = require('../utils/sendEmail');
+const crypto = require('crypto');
 
-// Tạo JWT token
-const signToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, {
-        expiresIn: process.env.JWT_EXPIRE
-    });
-};
-
-// @desc    Đăng ký người dùng mới
-// @route   POST /api/auth/register
-// @access  Public
-exports.register = async (req, res) => {
+/**
+ * @desc    Đăng ký người dùng mới
+ * @route   POST /api/auth/register
+ * @access  Public
+ */
+exports.register = async (req, res, next) => {
     try {
-        const { hoVaTen, email, matKhau, soDienThoai, vaiTro } = req.body;
+        const { hoVaTen, email, matKhau, soDienThoai, vaiTro, maSinhVien } = req.body;
 
         // Kiểm tra email đã tồn tại
         const existingUser = await User.findOne({ email });
@@ -26,41 +24,59 @@ exports.register = async (req, res) => {
         }
 
         // Tạo user mới
-        const user = await User.create({
+        const userData = {
             hoVaTen,
             email,
             matKhau,
             soDienThoai,
-            vaiTro
-        });
+            vaiTro: vaiTro || 'sinh_vien'
+        };
+
+        // Nếu là sinh viên, thêm mã sinh viên
+        if (vaiTro === 'sinh_vien' && maSinhVien) {
+            userData.thongTinSinhVien = {
+                maSinhVien
+            };
+        }
+
+        const user = await User.create(userData);
 
         // Tạo token
-        const token = signToken(user._id);
+        const token = tokenService.signToken(user._id);
 
-        res.status(201).json({
+        // ✅ Gửi email chào mừng KHÔNG ĐỒNG BỘ (không block response)
+        // Sử dụng setImmediate để không block response
+        setImmediate(async () => {
+            try {
+                await sendEmail.sendWelcomeEmail(user.email, user.hoVaTen);
+                console.log('✅ Welcome email sent successfully');
+            } catch (emailError) {
+                console.error('❌ Error sending welcome email:', emailError.message);
+                // Không throw error vì email không critical
+            }
+        });
+
+        // ✅ RETURN để đảm bảo không tiếp tục execute
+        return res.status(201).json({
             success: true,
             message: 'Đăng ký thành công',
             token,
-            user: {
-                id: user._id,
-                hoVaTen: user.hoVaTen,
-                email: user.email,
-                vaiTro: user.vaiTro
-            }
+            user: authService.getUserResponse(user)
         });
+
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Lỗi server',
-            error: error.message
-        });
+        console.error('❌ Register error:', error);
+        // ✅ Pass error to error handler middleware
+        next(error);
     }
 };
 
-// @desc    Đăng nhập
-// @route   POST /api/auth/login
-// @access  Public
-exports.login = async (req, res) => {
+/**
+ * @desc    Đăng nhập
+ * @route   POST /api/auth/login
+ * @access  Public
+ */
+exports.login = async (req, res, next) => {
     try {
         const { email, matKhau, vaiTro } = req.body;
 
@@ -72,8 +88,13 @@ exports.login = async (req, res) => {
             });
         }
 
-        // Tìm user
-        const user = await User.findOne({ email, vaiTro }).select('+matKhau');
+        // Tìm user và include password
+        const query = { email };
+        if (vaiTro) {
+            query.vaiTro = vaiTro;
+        }
+
+        const user = await User.findOne(query).select('+matKhau');
 
         if (!user) {
             return res.status(401).json({
@@ -100,48 +121,271 @@ exports.login = async (req, res) => {
             });
         }
 
-        // Tạo token
-        const token = signToken(user._id);
+        // Cập nhật thời gian đăng nhập cuối
+        user.lastLogin = Date.now();
+        await user.save({ validateBeforeSave: false });
 
-        res.status(200).json({
+        // Tạo token
+        const token = tokenService.signToken(user._id);
+
+        return res.status(200).json({
             success: true,
             message: 'Đăng nhập thành công',
             token,
-            user: {
-                id: user._id,
-                hoVaTen: user.hoVaTen,
-                email: user.email,
-                vaiTro: user.vaiTro,
-                anhDaiDien: user.anhDaiDien
-            }
+            user: authService.getUserResponse(user)
         });
+
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Lỗi server',
-            error: error.message
-        });
+        console.error('❌ Login error:', error);
+        next(error);
     }
 };
 
-// @desc    Lấy thông tin user hiện tại
-// @route   GET /api/auth/me
-// @access  Private
-exports.getMe = async (req, res) => {
+/**
+ * @desc    Lấy thông tin user hiện tại
+ * @route   GET /api/auth/me
+ * @access  Private
+ */
+exports.getMe = async (req, res, next) => {
     try {
         const user = await User.findById(req.user.id)
             .populate('congTy')
             .select('-matKhau');
 
-        res.status(200).json({
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy user'
+            });
+        }
+
+        return res.status(200).json({
             success: true,
             user
         });
+
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Lỗi server',
-            error: error.message
+        console.error('❌ GetMe error:', error);
+        next(error);
+    }
+};
+
+/**
+ * @desc    Quên mật khẩu - Gửi email reset
+ * @route   POST /api/auth/forgot-password
+ * @access  Public
+ */
+exports.forgotPassword = async (req, res, next) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                message: 'Vui lòng nhập email'
+            });
+        }
+
+        // Tìm user
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy tài khoản với email này'
+            });
+        }
+
+        // Tạo reset token
+        const resetToken = crypto.randomBytes(32).toString('hex');
+
+        // Hash token và lưu vào database
+        user.resetPasswordToken = crypto
+            .createHash('sha256')
+            .update(resetToken)
+            .digest('hex');
+
+        user.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 phút
+
+        await user.save({ validateBeforeSave: false });
+
+        // Tạo URL reset
+        const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+
+        // Gửi email
+        try {
+            await sendEmail.sendPasswordResetEmail(user.email, user.hoVaTen, resetUrl);
+
+            return res.status(200).json({
+                success: true,
+                message: 'Email hướng dẫn đặt lại mật khẩu đã được gửi'
+            });
+
+        } catch (emailError) {
+            console.error('❌ Send email error:', emailError);
+            
+            // Nếu gửi email thất bại, xóa token
+            user.resetPasswordToken = undefined;
+            user.resetPasswordExpire = undefined;
+            await user.save({ validateBeforeSave: false });
+
+            return res.status(500).json({
+                success: false,
+                message: 'Không thể gửi email. Vui lòng thử lại sau'
+            });
+        }
+
+    } catch (error) {
+        console.error('❌ ForgotPassword error:', error);
+        next(error);
+    }
+};
+
+/**
+ * @desc    Đặt lại mật khẩu
+ * @route   POST /api/auth/reset-password/:token
+ * @access  Public
+ */
+exports.resetPassword = async (req, res, next) => {
+    try {
+        const { token } = req.params;
+        const { matKhau } = req.body;
+
+        if (!matKhau) {
+            return res.status(400).json({
+                success: false,
+                message: 'Vui lòng nhập mật khẩu mới'
+            });
+        }
+
+        // Hash token để so sánh
+        const hashedToken = crypto
+            .createHash('sha256')
+            .update(token)
+            .digest('hex');
+
+        // Tìm user với token hợp lệ
+        const user = await User.findOne({
+            resetPasswordToken: hashedToken,
+            resetPasswordExpire: { $gt: Date.now() }
         });
+
+        if (!user) {
+            return res.status(400).json({
+                success: false,
+                message: 'Token không hợp lệ hoặc đã hết hạn'
+            });
+        }
+
+        // Cập nhật mật khẩu mới
+        user.matKhau = matKhau;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpire = undefined;
+
+        await user.save();
+
+        // Tạo token mới để tự động đăng nhập
+        const authToken = tokenService.signToken(user._id);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Đặt lại mật khẩu thành công',
+            token: authToken,
+            user: authService.getUserResponse(user)
+        });
+
+    } catch (error) {
+        console.error('❌ ResetPassword error:', error);
+        next(error);
+    }
+};
+
+/**
+ * @desc    Đổi mật khẩu
+ * @route   PUT /api/auth/change-password
+ * @access  Private
+ */
+exports.changePassword = async (req, res, next) => {
+    try {
+        const { matKhauCu, matKhauMoi } = req.body;
+
+        if (!matKhauCu || !matKhauMoi) {
+            return res.status(400).json({
+                success: false,
+                message: 'Vui lòng nhập đầy đủ thông tin'
+            });
+        }
+
+        // Lấy user với password
+        const user = await User.findById(req.user.id).select('+matKhau');
+
+        // Kiểm tra mật khẩu cũ
+        const isMatch = await user.comparePassword(matKhauCu);
+
+        if (!isMatch) {
+            return res.status(401).json({
+                success: false,
+                message: 'Mật khẩu cũ không đúng'
+            });
+        }
+
+        // Cập nhật mật khẩu mới
+        user.matKhau = matKhauMoi;
+        await user.save();
+
+        // Tạo token mới
+        const token = tokenService.signToken(user._id);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Đổi mật khẩu thành công',
+            token
+        });
+
+    } catch (error) {
+        console.error('❌ ChangePassword error:', error);
+        next(error);
+    }
+};
+
+/**
+ * @desc    Cập nhật thông tin profile
+ * @route   PUT /api/auth/update-profile
+ * @access  Private
+ */
+exports.updateProfile = async (req, res, next) => {
+    try {
+        const { hoVaTen, soDienThoai, diaChi } = req.body;
+
+        const user = await User.findById(req.user.id);
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy user'
+            });
+        }
+
+        if (hoVaTen) user.hoVaTen = hoVaTen;
+        if (soDienThoai) user.soDienThoai = soDienThoai;
+        
+        if (user.vaiTro === 'sinh_vien' && diaChi) {
+            if (!user.thongTinSinhVien) {
+                user.thongTinSinhVien = {};
+            }
+            user.thongTinSinhVien.diaChi = diaChi;
+        }
+
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: 'Cập nhật thông tin thành công',
+            user: authService.getUserResponse(user)
+        });
+
+    } catch (error) {
+        console.error('❌ UpdateProfile error:', error);
+        next(error);
     }
 };

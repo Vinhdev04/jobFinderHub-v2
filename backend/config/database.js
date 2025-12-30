@@ -4,11 +4,7 @@ const mongoose = require('mongoose');
 const connectDB = async () => {
     try {
         const conn = await mongoose.connect(
-            process.env.MONGODB_URI || 'mongodb://localhost:27017/jobfinder_db',
-            {
-                useNewUrlParser: true,
-                useUnifiedTopology: true
-            }
+            process.env.MONGODB_URI || 'mongodb://localhost:27017/jobfinder_db'
         );
 
         console.log(`MongoDB đã kết nối: ${conn.connection.host}`);
@@ -33,7 +29,7 @@ const connectDB = async () => {
             process.exit(0);
         });
     } catch (error) {
-        console.error(`Lỗi kết nối database: ${error.message}`);
+        console.error(`❌ Lỗi kết nối database: ${error.message}`);
         process.exit(1);
     }
 };

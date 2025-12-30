@@ -1,10 +1,9 @@
 // src/components/common/Navbar/Navbar.jsx
-
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Building2, Menu, X, User, LogOut } from 'lucide-react';
-import { useToggle } from '../../../hooks/useToggle';
-import { useAuth } from '../../../hooks/useAuth';
+import { Building2, Menu, X, User, LogOut, Settings } from 'lucide-react';
+import { useToggle } from '@hooks/useToggle';
+import { useAuth } from '@hooks/useAuth';
 import Button from '../Button/Button';
 import './Navbar.css';
 
@@ -14,6 +13,7 @@ const Navbar = ({ isDark = false }) => {
     const { isAuthenticated, user, logout } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
+    const dropdownRef = useRef(null);
 
     const navLinks = [
         { label: 'Trang chủ', href: '/' },
@@ -22,8 +22,25 @@ const Navbar = ({ isDark = false }) => {
         { label: 'Giới thiệu', href: '/about' }
     ];
 
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                if (isUserMenuOpen) {
+                    toggleUserMenu();
+                }
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isUserMenuOpen, toggleUserMenu]);
+
     const handleLogout = () => {
         logout();
+        toggleUserMenu();
         navigate('/login');
     };
 
@@ -31,10 +48,16 @@ const Navbar = ({ isDark = false }) => {
         return location.pathname === href;
     };
 
+    // ✅ Get display name from user
+    const getDisplayName = () => {
+        if (!user) return 'User';
+        return user.hoVaTen || user.fullName || user.email?.split('@')[0] || 'User';
+    };
+
     return (
         <nav className={`navbar ${isDark ? 'navbar--dark' : 'navbar--light'}`}>
-            <div className='container d-flex justify-content-center'>
-                <div className='navbar__content '>
+            <div className='container'>
+                <div className='navbar__content'>
                     {/* Logo */}
                     <Link to='/' className='navbar__logo'>
                         <div className='navbar__logo-icon'>
@@ -70,13 +93,13 @@ const Navbar = ({ isDark = false }) => {
                     {/* Actions */}
                     <div className='navbar__actions navbar__actions--desktop'>
                         {isAuthenticated ? (
-                            <div className='navbar__user-menu'>
+                            <div className='navbar__user-menu' ref={dropdownRef}>
                                 <button
                                     className='navbar__user-trigger'
                                     onClick={toggleUserMenu}
                                 >
                                     <User size={20} />
-                                    <span>{user?.fullName || 'User'}</span>
+                                    <span>{getDisplayName()}</span>
                                 </button>
                                 {isUserMenuOpen && (
                                     <div className='navbar__dropdown'>
@@ -95,6 +118,14 @@ const Navbar = ({ isDark = false }) => {
                                         >
                                             <Building2 size={18} />
                                             <span>Bảng điều khiển</span>
+                                        </Link>
+                                        <Link
+                                            to='/settings'
+                                            className='navbar__dropdown-item'
+                                            onClick={toggleUserMenu}
+                                        >
+                                            <Settings size={18} />
+                                            <span>Cài đặt</span>
                                         </Link>
                                         <button
                                             className='navbar__dropdown-item navbar__dropdown-item--logout'
@@ -148,6 +179,10 @@ const Navbar = ({ isDark = false }) => {
                         <div className='navbar__mobile-actions'>
                             {isAuthenticated ? (
                                 <>
+                                    <div className='navbar__mobile-user'>
+                                        <User size={20} />
+                                        <span>{getDisplayName()}</span>
+                                    </div>
                                     <Link to='/profile' onClick={toggle}>
                                         <Button
                                             variant='ghost'
@@ -155,6 +190,15 @@ const Navbar = ({ isDark = false }) => {
                                             fullWidth
                                         >
                                             Hồ sơ của tôi
+                                        </Button>
+                                    </Link>
+                                    <Link to='/dashboard' onClick={toggle}>
+                                        <Button
+                                            variant='ghost'
+                                            size='sm'
+                                            fullWidth
+                                        >
+                                            Bảng điều khiển
                                         </Button>
                                     </Link>
                                     <Button

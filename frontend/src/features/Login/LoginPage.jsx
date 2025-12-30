@@ -1,7 +1,9 @@
+// frontend/src/features/Login/LoginPage.jsx
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@hooks/useAuth';
 import Modal from '@components/common/Modal/Modal';
+import { validateEmail } from '@utils/validators.js';
 import './LoginPage.css';
 
 const LoginPage = () => {
@@ -11,8 +13,9 @@ const LoginPage = () => {
         password: '',
         rememberMe: false
     });
-    const [error, setError] = useState('');
+    const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
+    const [apiError, setApiError] = useState('');
 
     const { login } = useAuth();
     const navigate = useNavigate();
@@ -20,37 +23,77 @@ const LoginPage = () => {
 
     const from = location.state?.from?.pathname || '/';
 
+    // ✅ MAP role từ tiếng Anh sang tiếng Việt
+    const roleMapping = {
+        'student': 'sinh_vien',
+        'academic-staff': 'giao_vu',
+        'recruiter': 'nhan_vien_tuyen_dung',
+        'company-manager': 'quan_ly_doanh_nghiep',
+        'admin': 'quan_tri_he_thong'
+    };
+
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         setFormData((prev) => ({
             ...prev,
             [name]: type === 'checkbox' ? checked : value
         }));
-        setError('');
+        
+        // Clear errors khi user thay đổi input
+        if (errors[name]) {
+            setErrors((prev) => ({
+                ...prev,
+                [name]: ''
+            }));
+        }
+        setApiError('');
+    };
+
+    const validateForm = () => {
+        const newErrors = {};
+
+        const emailError = validateEmail(formData.email);
+        if (emailError) newErrors.email = emailError;
+
+        if (!formData.password) {
+            newErrors.password = 'Mật khẩu không được để trống';
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        if (!validateForm()) {
+            return;
+        }
+
         setLoading(true);
-        setError('');
+        setApiError('');
 
         try {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-
-            const mockToken = 'mock-jwt-token-' + Date.now();
-            const mockUser = {
-                id: 1,
+            // ✅ Gửi đúng format backend expect
+            const loginData = {
                 email: formData.email,
-                fullName: 'Nguyễn Văn A',
-                role: formData.role,
-                avatar: null
+                matKhau: formData.password, // ✅ Sửa từ 'password' thành 'matKhau'
+                vaiTro: roleMapping[formData.role] // ✅ Sửa từ 'role' thành 'vaiTro'
             };
 
-            login(mockToken, mockUser);
-            navigate(from, { replace: true });
-        } catch (err) {
-            console.log(err);
-            setError('Email hoặc mật khẩu không đúng');
+            console.log('Sending login data:', loginData); // Debug
+
+            const result = await login(loginData);
+
+            if (result.success) {
+                // Đăng nhập thành công, chuyển hướng
+                navigate(from, { replace: true });
+            } else {
+                setApiError(result.message || 'Đăng nhập thất bại');
+            }
+        } catch (error) {
+            console.error('Login error:', error); // Debug
+            setApiError(error.message || 'Đăng nhập thất bại');
         } finally {
             setLoading(false);
         }
@@ -68,8 +111,10 @@ const LoginPage = () => {
             subtitle='Quản lý thực tập & tuyển dụng thời gian thực'
             size='default'
         >
-            <div className='login-form'>
-                {error && <div className='login-form__error'>{error}</div>}
+            <form className='login-form' onSubmit={handleSubmit}>
+                {apiError && (
+                    <div className='login-form__error'>{apiError}</div>
+                )}
 
                 <div className='row g-3'>
                     <div className='col-12'>
@@ -81,14 +126,16 @@ const LoginPage = () => {
                             onChange={handleChange}
                             disabled={loading}
                         >
-                            <option value='academic-staff'>Giáo vụ</option>
                             <option value='student'>Sinh viên</option>
-                            <option value='admin'>Quản trị hệ thống</option>
+                            <option value='academic-staff'>Giáo vụ</option>
                             <option value='recruiter'>
                                 Nhân viên tuyển dụng
                             </option>
                             <option value='company-manager'>
                                 Quản lý doanh nghiệp
+                            </option>
+                            <option value='admin'>
+                                Quản trị hệ thống
                             </option>
                         </select>
                     </div>
@@ -98,13 +145,20 @@ const LoginPage = () => {
                         <input
                             type='email'
                             name='email'
-                            className='login-form__input'
+                            className={`login-form__input ${
+                                errors.email ? 'login-form__input--error' : ''
+                            }`}
                             placeholder='your.email@example.com'
                             value={formData.email}
                             onChange={handleChange}
                             disabled={loading}
                             required
                         />
+                        {errors.email && (
+                            <span className='login-form__field-error'>
+                                {errors.email}
+                            </span>
+                        )}
                     </div>
 
                     <div className='col-12'>
@@ -112,13 +166,20 @@ const LoginPage = () => {
                         <input
                             type='password'
                             name='password'
-                            className='login-form__input'
+                            className={`login-form__input ${
+                                errors.password ? 'login-form__input--error' : ''
+                            }`}
                             placeholder='••••••••'
                             value={formData.password}
                             onChange={handleChange}
                             disabled={loading}
                             required
                         />
+                        {errors.password && (
+                            <span className='login-form__field-error'>
+                                {errors.password}
+                            </span>
+                        )}
                     </div>
 
                     <div className='col-12'>
@@ -144,9 +205,8 @@ const LoginPage = () => {
                 </div>
 
                 <button
-                    type='button'
+                    type='submit'
                     className='login-form__button'
-                    onClick={handleSubmit}
                     disabled={loading}
                 >
                     {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
@@ -161,7 +221,7 @@ const LoginPage = () => {
                         Đăng ký ngay
                     </Link>
                 </div>
-            </div>
+            </form>
         </Modal>
     );
 };
