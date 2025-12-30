@@ -1,4 +1,5 @@
 // backend/app.js
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -6,11 +7,15 @@ const morgan = require('morgan');
 const dotenv = require('dotenv');
 const connectDB = require('./config/database');
 const { errorHandler, notFound } = require('./middleware/errorHandler');
+const {
+    protect,
+    isAdmin,
+    isRecruiter,
+    isCandidate,
+} = require('./middleware/auth');
 
-// Load env vars
-dotenv.config();
 
-// Connect to database
+// Connect DB
 connectDB();
 
 const app = express();
@@ -18,42 +23,27 @@ const app = express();
 // ========================
 // MIDDLEWARE
 // ========================
-app.use(helmet()); // Security headers
-app.use(cors()); // Enable CORS
-app.use(express.json({ limit: '10mb' })); // Parse JSON
-app.use(express.urlencoded({ extended: true, limit: '10mb' })); // Parse URL-encoded
-app.use(morgan('dev')); // Logging
+app.use(helmet());
+app.use(cors());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(morgan('dev'));
 
 // ========================
-// IMPORT CONTROLLERS & MIDDLEWARE
+// ROUTES (ROUTER STYLE)
 // ========================
-const { protect, authorize, isAdmin, isRecruiter, isCandidate } = require('./middleware/auth');
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/users', require('./routes/users'));
 
-// Auth
-const authController = require('./controller/authController');
-// Company
+// ========================
+// CONTROLLERS
+// ========================
 const companyController = require('./controller/companyController');
-// Job
 const jobController = require('./controller/jobController');
-// Application
 const applicationController = require('./controller/applicationController');
-// Interview
 const interviewController = require('./controller/interviewController');
-// Notification
 const notificationController = require('./controller/notificationController');
-// Report
 const reportController = require('./controller/reportController');
-
-// ========================
-// AUTH ROUTES
-// ========================
-app.post('/api/auth/register', authController.register);
-app.post('/api/auth/login', authController.login);
-app.get('/api/auth/me', protect, authController.getMe);
-app.post('/api/auth/forgot-password', authController.forgotPassword);
-app.post('/api/auth/reset-password/:token', authController.resetPassword);
-app.put('/api/auth/change-password', protect, authController.changePassword);
-app.put('/api/auth/update-profile', protect, authController.updateProfile);
 
 // ========================
 // COMPANY ROUTES
@@ -66,7 +56,7 @@ app.delete('/api/companies/:id', protect, isAdmin, companyController.deleteCompa
 app.put('/api/companies/:id/verify', protect, isAdmin, companyController.verifyCompany);
 
 // ========================
-// JOB POSTING ROUTES
+// JOB ROUTES
 // ========================
 app.get('/api/jobs', jobController.getAllJobs);
 app.get('/api/jobs/:id', jobController.getJobById);
@@ -123,8 +113,8 @@ app.get('/health', (req, res) => {
     res.json({
         success: true,
         message: 'Server is running',
-        timestamp: new Date().toISOString(),
-        environment: process.env.NODE_ENV || 'development'
+        time: new Date().toISOString(),
+        env: process.env.NODE_ENV || 'development',
     });
 });
 
@@ -146,8 +136,7 @@ const server = app.listen(PORT, () => {
 ╠════════════════════════════════════════╣
 ║ Port: ${PORT}
 ║ Environment: ${process.env.NODE_ENV || 'development'}
-║ Database: Connected
-║ Health: ✅ http://localhost:${PORT}/health
+║ Health: http://localhost:${PORT}/health
 ╚════════════════════════════════════════╝
     `);
 });

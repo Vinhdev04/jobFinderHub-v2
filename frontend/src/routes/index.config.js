@@ -16,6 +16,7 @@ import AdminDashboard from '@pages/AdminDashboard.jsx';
 import NewsPage from '@pages/NewsPage';
 import AboutPage from '@pages/AboutPage';
 import NewDetailPages from '@pages/NewDetailPage';
+import ForgotPasswordPage from '@pages/ForgotPasswordPage.jsx';
 // =======================
 // ROUTES CONFIG
 // =======================
@@ -82,6 +83,17 @@ export const routes = [
         layout: 'auth',
         meta: {
             title: 'Đăng ký tài khoản',
+            requiresAuth: false,
+            showNavbar: false,
+            showFooter: false
+        }
+    },
+      {
+        path: '/forgot-password',
+        element: ForgotPasswordPage,
+        layout: 'auth',
+        meta: {
+            title: 'Quên mật khẩu',
             requiresAuth: false,
             showNavbar: false,
             showFooter: false

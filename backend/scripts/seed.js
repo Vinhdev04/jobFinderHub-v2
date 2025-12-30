@@ -1,3 +1,4 @@
+
 // backend/seed/seed.js
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
@@ -1070,3 +1071,4 @@ const seedData = async () => {
 
 // Run the seeder
 connectDB().then(seedData);
+

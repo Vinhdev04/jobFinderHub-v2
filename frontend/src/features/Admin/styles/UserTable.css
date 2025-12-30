@@ -230,3 +230,82 @@
         padding: 0.75rem 0.5rem;
     }
 }
+/* Thêm vào UserTable.css */
+
+.filter-select {
+    padding: 0.5rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    color: #374151;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-select:hover {
+    border-color: #14b8a6;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #14b8a6;
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+}
+
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    background: white;
+    border-top: 1px solid #e5e7eb;
+    border-radius: 0 0 1rem 1rem;
+}
+
+.pagination-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background: white;
+    color: #374151;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    border-color: #14b8a6;
+    color: #14b8a6;
+    background: rgba(20, 184, 166, 0.05);
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-info {
+    font-size: 0.875rem;
+    color: #374151;
+    font-weight: 500;
+}
+
+.loading-spinner {
+    text-align: center;
+    padding: 3rem;
+    font-size: 1.125rem;
+    color: #6b7280;
+}
+
+.icon-btn.success {
+    color: #10b981;
+}
+
+.icon-btn.success:hover {
+    background: rgba(16, 185, 129, 0.1);
+}
