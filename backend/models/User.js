@@ -185,8 +185,11 @@ userSchema.methods.createPasswordResetToken = function () {
 // VIRTUALS
 // ============================================
 userSchema.virtual('tenRutGon').get(function () {
-    const names = this.hoVaTen.split(' ');
-    return names[names.length - 1];
+    // Safely derive short name; handle missing or non-string hoVaTen
+    const fullName = this.hoVaTen || '';
+    if (typeof fullName !== 'string' || fullName.trim() === '') return '';
+    const names = fullName.trim().split('\s+');
+    return names[names.length - 1] || '';
 });
 
 userSchema.virtual('laSinhVien').get(function () {

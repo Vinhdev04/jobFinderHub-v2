@@ -6,6 +6,8 @@ import LoginPage from '@pages/Login.jsx';
 import RegisterPage from '@pages/Register.jsx';
 import NotFoundPage from '@pages/NotFoundPage.jsx';
 import JobPages from '@pages/JobsPage.jsx';
+import JobDetailPage from '@pages/JobDetailPage.jsx';
+import JobApplyPage from '@pages/JobApplyPage.jsx';
 
 // Dashboards
 import StudentDashboard from '@pages/StudentDashboard.jsx';
@@ -106,6 +108,28 @@ export const routes = [
         meta: {
             title: 'Việc làm',
             requiresAuth: false,
+            showNavbar: true,
+            showFooter: true
+        }
+    },
+    {
+        path: '/jobs/:id',
+        element: JobDetailPage,
+        layout: 'main',
+        meta: {
+            title: 'Chi tiết công việc',
+            requiresAuth: false,
+            showNavbar: true,
+            showFooter: true
+        }
+    },
+    {
+        path: '/jobs/:id/apply',
+        element: JobApplyPage,
+        layout: 'main',
+        meta: {
+            title: 'Ứng tuyển',
+            requiresAuth: true,
             showNavbar: true,
             showFooter: true
         }

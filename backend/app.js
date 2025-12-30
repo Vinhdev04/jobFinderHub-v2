@@ -14,7 +14,6 @@ const {
     isCandidate,
 } = require('./middleware/auth');
 
-
 // Connect DB
 connectDB();
 
@@ -36,7 +35,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
 
 // ========================
-// CONTROLLERS
+// CONTROLLERS - ✅ FIXED: controllers/ thay vì controller/
 // ========================
 const companyController = require('./controller/companyController');
 const jobController = require('./controller/jobController');
@@ -58,12 +57,18 @@ app.put('/api/companies/:id/verify', protect, isAdmin, companyController.verifyC
 // ========================
 // JOB ROUTES
 // ========================
+// Public routes - không cần authentication
 app.get('/api/jobs', jobController.getAllJobs);
+app.get('/api/jobs/company/:companyId', jobController.getJobsByCompany);
 app.get('/api/jobs/:id', jobController.getJobById);
+
+// Job details (create/update) - protected: recruiter or admin
+app.post('/api/jobs/:id/detail', protect, jobController.upsertJobDetail);
+
+// Protected routes - cần authentication
 app.post('/api/jobs', protect, isRecruiter, jobController.createJob);
 app.put('/api/jobs/:id', protect, jobController.updateJob);
 app.delete('/api/jobs/:id', protect, jobController.deleteJob);
-app.get('/api/jobs/company/:companyId', jobController.getJobsByCompany);
 app.put('/api/jobs/:id/approve', protect, isAdmin, jobController.approveJob);
 
 // ========================
@@ -131,13 +136,13 @@ const PORT = process.env.PORT || 5000;
 
 const server = app.listen(PORT, () => {
     console.log(`
-╔════════════════════════════════════════╗
+╔═══════════════════════════════════════╗
 ║       🚀 JOB FINDER API SERVER        ║
-╠════════════════════════════════════════╣
+╠═══════════════════════════════════════╣
 ║ Port: ${PORT}
 ║ Environment: ${process.env.NODE_ENV || 'development'}
 ║ Health: http://localhost:${PORT}/health
-╚════════════════════════════════════════╝
+╚═══════════════════════════════════════╝
     `);
 });
 

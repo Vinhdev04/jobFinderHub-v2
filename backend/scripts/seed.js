@@ -192,7 +192,7 @@ const seedData = async () => {
             {
                 tenCongTy: 'Tech Corp Vietnam',
                 moTa: 'Công ty công nghệ hàng đầu Việt Nam, chuyên về phát triển phần mềm và giải pháp AI',
-                logo: 'https://via.placeholder.com/200x200?text=TechCorp',
+                logo: 'https://tse2.mm.bing.net/th/id/OIP.SVCmw5xOUXiMjndykUjmZgHaEK?rs=1&pid=ImgDetMain&o=7&rm=3',
                 diaChi: '123 Đường Nguyễn Huệ, Quận 1, TP.HCM',
                 website: 'https://techcorp.vn',
                 linhVuc: 'Công nghệ thông tin',
@@ -211,7 +211,7 @@ const seedData = async () => {
             {
                 tenCongTy: 'Innovate Solutions',
                 moTa: 'Startup về giải pháp số hóa cho doanh nghiệp, tập trung vào Cloud và Mobile',
-                logo: 'https://via.placeholder.com/200x200?text=Innovate',
+                logo: 'https://tse2.mm.bing.net/th/id/OIP.1e2OxaTEP5dgpQBwG0EdMAHaEP?rs=1&pid=ImgDetMain&o=7&rm=3',
                 diaChi: '456 Đường Lê Lợi, Quận 3, TP.HCM',
                 website: 'https://innovate.vn',
                 linhVuc: 'Công nghệ thông tin',
@@ -230,7 +230,7 @@ const seedData = async () => {
             {
                 tenCongTy: 'Digital Marketing Pro',
                 moTa: 'Công ty chuyên về marketing số, SEO, và quảng cáo trực tuyến',
-                logo: 'https://via.placeholder.com/200x200?text=DigitalMKT',
+                logo: 'https://th.bing.com/th/id/OIP.GAv4AX7ymWtZ2Rxjja9nDgHaC-?o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3',
                 diaChi: '789 Đường Trần Hưng Đạo, Quận 5, TP.HCM',
                 website: 'https://digitalmarketingpro.vn',
                 linhVuc: 'Marketing',
@@ -249,7 +249,7 @@ const seedData = async () => {
             {
                 tenCongTy: 'FinTech Startup',
                 moTa: 'Startup công nghệ tài chính, phát triển ứng dụng thanh toán và quản lý tài chính cá nhân',
-                logo: 'https://via.placeholder.com/200x200?text=FinTech',
+                logo: 'https://www.prismetric.com/wp-content/uploads/2023/02/fintech-startup-what-you-must-know.jpg',
                 diaChi: '321 Đường Võ Văn Tần, Quận 3, TP.HCM',
                 website: 'https://fintechstartup.io',
                 linhVuc: 'Công nghệ tài chính',
@@ -268,7 +268,7 @@ const seedData = async () => {
             {
                 tenCongTy: 'E-Commerce Giant',
                 moTa: 'Công ty thương mại điện tử lớn, cung cấp nền tảng mua bán trực tuyến',
-                logo: 'https://via.placeholder.com/200x200?text=ECommerce',
+                logo: 'https://img.etoday.co.kr/pto_db/2020/09/600/20200906161705_1506981_1200_777.jpg',
                 diaChi: '555 Đường Cách Mạng Tháng 8, Quận 10, TP.HCM',
                 website: 'https://ecommercegiant.vn',
                 linhVuc: 'Thương mại điện tử',

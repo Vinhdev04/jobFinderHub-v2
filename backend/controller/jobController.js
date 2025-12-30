@@ -1,5 +1,6 @@
 // backend/controllers/jobController.js
 const JobPosting = require('../models/JobPosting');
+const JobDetail = require('../models/JobDetail');
 
 /**
  * @desc    Lấy tất cả bài đăng việc làm
@@ -18,6 +19,9 @@ exports.getAllJobs = async (req, res, next) => {
         } = req.query;
 
         const filter = {};
+
+        // Debug logging: show incoming params and types to diagnose 500 errors
+        console.log('🔍 Fetching jobs with params: ', { page, limit, trangThai, nganhNghe, loaiCongViec, search });
 
         if (trangThai) {
             filter.trangThai = trangThai;
@@ -39,13 +43,20 @@ exports.getAllJobs = async (req, res, next) => {
             ];
         }
 
-        const jobs = await JobPosting.find(filter)
-            .populate('congTy', 'tenCongTy logo diaChi')
-            .populate('nguoiTao', 'hoTen email')
+        console.log('🔎 Constructed filter:', filter);
+
+        // const jobs = await JobPosting.find(filter)
+        //     .populate('congTy', 'tenCongTy logo diaChi')
+        //     .populate('nguoiTao', 'hoTen email')
+        //     .limit(limit * 1)
+        //     .skip((page - 1) * limit)
+        //     .sort({ createdAt: -1 });
+const jobs = await JobPosting.find(filter)
+            // .populate('congTy', 'tenCongTy logo diaChi')  // Comment tạm
+            // .populate('nguoiTao', 'hoTen email')          // Comment tạm
             .limit(limit * 1)
             .skip((page - 1) * limit)
             .sort({ createdAt: -1 });
-
         const total = await JobPosting.countDocuments(filter);
 
         return res.status(200).json({
@@ -86,9 +97,21 @@ exports.getJobById = async (req, res, next) => {
             });
         }
 
+        // Fetch extended job detail (if any) stored in separate collection
+        let jobDetail = null;
+        try {
+            jobDetail = await JobDetail.findOne({ job: job._id });
+        } catch (err) {
+            console.error('❌ JobDetail lookup error:', err.message);
+        }
+
+        // Merge detail into response object
+        const jobObj = job.toObject ? job.toObject() : job;
+        jobObj.chiTiet = jobDetail || null;
+
         return res.status(200).json({
             success: true,
-            data: job
+            data: jobObj
         });
 
     } catch (error) {
@@ -333,6 +356,63 @@ exports.approveJob = async (req, res, next) => {
 
     } catch (error) {
         console.error('❌ ApproveJob error:', error);
+        next(error);
+    }
+};
+
+/**
+ * @desc    Create or update job detail for a job
+ * @route   POST /api/jobs/:id/detail
+ * @access  Private (Recruiter/Admin)
+ */
+exports.upsertJobDetail = async (req, res, next) => {
+    try {
+        const jobId = req.params.id;
+
+        // Ensure job exists
+        const job = await JobPosting.findById(jobId);
+        if (!job) {
+            return res.status(404).json({ success: false, message: 'Không tìm thấy bài đăng' });
+        }
+
+        // Authorization: only the recruiter who created the job or admin can update
+        if (req.user && req.user.vaiTro !== 'quan_tri_he_thong' && job.nguoiTao.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ success: false, message: 'Bạn không có quyền cập nhật chi tiết này' });
+        }
+
+        const {
+            moTaChiTiet,
+            nhiemVu,
+            yeuCauChiTiet,
+            kyNang,
+            loiIch,
+            huongDanUngTuyen,
+            attachments
+        } = req.body;
+
+        const payload = {
+            job: jobId,
+            moTaChiTiet: moTaChiTiet || '',
+            nhiemVu: Array.isArray(nhiemVu) ? nhiemVu : (nhiemVu ? [nhiemVu] : []),
+            yeuCauChiTiet: yeuCauChiTiet || '',
+            kyNang: Array.isArray(kyNang) ? kyNang : (kyNang ? [kyNang] : []),
+            loiIch: loiIch || '',
+            huongDanUngTuyen: huongDanUngTuyen || '',
+            attachments: Array.isArray(attachments) ? attachments : []
+        };
+
+        let detail = await JobDetail.findOne({ job: jobId });
+        if (detail) {
+            Object.assign(detail, payload);
+            await detail.save();
+        } else {
+            detail = await JobDetail.create(payload);
+        }
+
+        return res.status(200).json({ success: true, data: detail });
+
+    } catch (error) {
+        console.error('❌ UpsertJobDetail error:', error);
         next(error);
     }
 };
