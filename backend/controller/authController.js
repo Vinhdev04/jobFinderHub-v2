@@ -32,10 +32,26 @@ exports.register = async (req, res, next) => {
             vaiTro: vaiTro || 'sinh_vien'
         };
 
-        // Nếu là sinh viên, thêm mã sinh viên
+        // Xử lý thông tin theo vai trò
         if (vaiTro === 'sinh_vien' && maSinhVien) {
             userData.thongTinSinhVien = {
-                maSinhVien
+                maSinhVien: req.body.maSinhVien
+            };
+        }
+
+        if ((vaiTro === 'nhan_vien_tuyen_dung' || vaiTro === 'quan_ly_doanh_nghiep')) {
+            userData.thongTinNhanVien = {
+                tenCongTy: req.body.tenCongTy,
+                viTri: req.body.viTri,
+                phongBan: req.body.phongBan
+            };
+        }
+
+        if (vaiTro === 'giao_vu') {
+            userData.thongTinGiaoVu = {
+                maGiaoVu: req.body.maGiaoVu,
+                phongBan: req.body.phongBan,
+                chucVu: req.body.chucVu
             };
         }
 

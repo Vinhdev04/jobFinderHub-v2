@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Modal from '@components/common/Modal/Modal';
-import authService from '@services/authService';
-import { validateEmail } from '@utils/validation';
-import './ForgotPasswordPage.css';
+import authService from '@services/authService.js';
+import { validateEmail } from '@utils/validators.js';
+import './ForgotPassword.css';
 
 const ForgotPasswordPage = () => {
     const [email, setEmail] = useState('');

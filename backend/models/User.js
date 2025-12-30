@@ -1,3 +1,4 @@
+// backend/models/User.js
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
@@ -45,6 +46,8 @@ const userSchema = new mongoose.Schema(
             default: 'sinh_vien',
             index: true
         },
+        
+        // Thông tin sinh viên
         thongTinSinhVien: {
             maSinhVien: {
                 type: String,
@@ -82,10 +85,31 @@ const userSchema = new mongoose.Schema(
                 capNhatLuc: Date
             }
         },
+
+        // Thông tin nhân viên tuyển dụng / Quản lý DN
+        thongTinNhanVien: {
+            tenCongTy: String,
+            viTri: String,
+            phongBan: String,
+            ngayVaoLam: Date
+        },
+
+        // Thông tin giáo vụ
+        thongTinGiaoVu: {
+            maGiaoVu: {
+                type: String,
+                sparse: true
+            },
+            phongBan: String,
+            chucVu: String
+        },
+
+        // Reference đến công ty (nếu có)
         congTy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Company'
         },
+
         trangThai: {
             type: String,
             enum: ['hoat_dong', 'tam_khoa', 'khoa'],
@@ -118,7 +142,6 @@ const userSchema = new mongoose.Schema(
         toObject: { virtuals: true }
     }
 );
-
 
 // ============================================
 // ✅ MIDDLEWARE - Hash mật khẩu (FIXED)

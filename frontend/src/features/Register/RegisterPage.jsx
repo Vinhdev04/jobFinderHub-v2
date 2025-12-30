@@ -7,6 +7,14 @@ import Modal from '@components/common/Modal/Modal';
 import { validateRegisterForm } from '@utils/validators.js';
 import './RegisterPage.css';
 
+// Add field error styles if not already in CSS
+const fieldErrorStyle = {
+    color: 'var(--color-error)',
+    fontSize: 'var(--font-size-sm)',
+    marginTop: 'var(--spacing-xs)',
+    display: 'block'
+};
+
 const RegisterPage = () => {
     const [formData, setFormData] = useState({
         role: 'student',

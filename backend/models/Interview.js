@@ -66,7 +66,7 @@ const interviewSchema = new mongoose.Schema({
       max: 10
     },
     nhanXet: String,
-    quyet­Dinh: {
+    quyetDinh: { // Đã sửa lỗi ký tự ẩn tại đây
       type: String,
       enum: ['tuyen', 'khong_tuyen', 'can_phong_van_lai']
     }

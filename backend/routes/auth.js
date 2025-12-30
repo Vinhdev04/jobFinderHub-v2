@@ -1,8 +1,8 @@
 // backend/routes/auth.js
 const express = require('express');
 const router = express.Router();
-const authController = require('../controller/authController.js');
-const { protect } = require('../middleware/auth.js');
+const authController = require('../controller/authController'); // ✅ FIX: controllers (not controller)
+const { protect } = require('../middleware/auth');
 
 // ============================================
 // PUBLIC ROUTES (không cần authentication)
