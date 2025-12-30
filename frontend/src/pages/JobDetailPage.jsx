@@ -16,10 +16,12 @@ import {
 } from 'lucide-react';
 import jobService from '@services/jobService';
 import './JobDetailsPage.css';
+import { useAuth } from '@hooks/useAuth';
 
 const JobDetailsPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { isAuthenticated } = useAuth();
     const [job, setJob] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -32,6 +34,11 @@ const JobDetailsPage = () => {
                 const response = await jobService.getJobById(id);
                 if (response.success) {
                     setJob(response.data);
+                    // check if user already applied (for UI)
+                    const user = JSON.parse(localStorage.getItem('user') || 'null');
+                    if (user) {
+                        // naive check on job.soLuongUngTuyen not sufficient; we'll fetch applications later
+                    }
                 }
             } catch (err) {
                 console.error('Error fetching job details:', err);
@@ -84,6 +91,10 @@ const JobDetailsPage = () => {
 
     // Handle apply
     const handleApply = () => {
+        if (!isAuthenticated) {
+            navigate('/login', { state: { from: `/jobs/${id}/apply` } });
+            return;
+        }
         navigate(`/jobs/${id}/apply`);
     };
 
@@ -240,8 +251,9 @@ const JobDetailsPage = () => {
                             <button 
                                 onClick={handleApply}
                                 className='btn-apply-large'
+                                disabled={job._alreadyApplied}
                             >
-                                Ứng tuyển ngay
+                                {job._alreadyApplied ? 'Đã ứng tuyển' : 'Ứng tuyển ngay'}
                             </button>
                         </div>
 

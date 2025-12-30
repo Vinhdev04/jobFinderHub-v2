@@ -79,7 +79,8 @@ exports.protect = async (req, res, next) => {
  */
 exports.authorize = (...roles) => {
     return (req, res, next) => {
-        if (!roles.includes(req.user.loaiTaiKhoan)) {
+        // Use `vaiTro` field on User model
+        if (!roles.includes(req.user.vaiTro)) {
             return res.status(403).json({
                 success: false,
                 message: 'Bạn không có quyền truy cập'
@@ -94,7 +95,7 @@ exports.authorize = (...roles) => {
  * @access  Private
  */
 exports.isAdmin = (req, res, next) => {
-    if (req.user.loaiTaiKhoan !== 'admin') {
+    if (req.user.vaiTro !== 'quan_tri_he_thong') {
         return res.status(403).json({
             success: false,
             message: 'Chỉ admin mới có thể truy cập'
@@ -108,7 +109,7 @@ exports.isAdmin = (req, res, next) => {
  * @access  Private
  */
 exports.isRecruiter = (req, res, next) => {
-    if (req.user.loaiTaiKhoan !== 'nha_tuyen_dung') {
+    if (req.user.vaiTro !== 'nhan_vien_tuyen_dung') {
         return res.status(403).json({
             success: false,
             message: 'Chỉ nhà tuyển dụng mới có thể truy cập'
@@ -122,7 +123,7 @@ exports.isRecruiter = (req, res, next) => {
  * @access  Private
  */
 exports.isCandidate = (req, res, next) => {
-    if (req.user.loaiTaiKhoan !== 'ung_vien') {
+    if (req.user.vaiTro !== 'sinh_vien') {
         return res.status(403).json({
             success: false,
             message: 'Chỉ ứng viên mới có thể truy cập'

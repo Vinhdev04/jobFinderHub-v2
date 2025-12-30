@@ -1,5 +1,6 @@
 // ==================== hooks/useProfile.js ====================
 import { useState, useEffect } from 'react';
+import api from '@services/api';
 
 export const useProfile = () => {
     const [profile, setProfile] = useState(null);
@@ -14,48 +15,31 @@ export const useProfile = () => {
     const fetchProfile = async () => {
         try {
             setLoading(true);
+            // Fetch current user profile from API
+            const res = await api.get('/auth/me');
+            // backend returns { success: true, user }
+            if (res && res.success && res.user) {
+                const u = res.user;
+                setProfile({
+                    id: u._id || u.id,
+                    name: u.hoVaTen || u.name || u.ho_ten || u.ten || '',
+                    email: u.email,
+                    phone: u.soDienThoai || u.phone,
+                    birthDate: u.ngaySinh || u.birthDate,
+                    address: u.diaChi || u.address,
+                    major: u.chuyenNganh || u.major,
+                    avatar: u.avatar || null
+                });
 
-            // Mock data - Replace with actual API calls
-            // const [profileRes, eduRes, skillsRes] = await Promise.all([
-            //   fetch('/api/student/profile'),
-            //   fetch('/api/student/education'),
-            //   fetch('/api/student/skills')
-            // ]);
-
-            await new Promise((resolve) => setTimeout(resolve, 500));
-
-            const mockProfile = {
-                name: 'Nguyễn Văn A',
-                email: 'nguyenvana@student.edu.vn',
-                phone: '0123456789',
-                birthDate: '2002-05-15',
-                address: 'Hà Nội, Việt Nam',
-                major: 'Sinh viên IT',
-                avatar: null
-            };
-
-            const mockEducation = [
-                {
-                    id: 1,
-                    school: 'Đại học Bách Khoa Hà Nội',
-                    major: 'Công nghệ thông tin',
-                    period: '2020 - 2024',
-                    gpa: '3.5/4.0'
-                }
-            ];
-
-            const mockSkills = [
-                'React',
-                'TypeScript',
-                'Node.js',
-                'TailwindCSS',
-                'Git',
-                'Figma'
-            ];
-
-            setProfile(mockProfile);
-            setEducation(mockEducation);
-            setSkills(mockSkills);
+                // If backend exposes education/skills on user, use them
+                if (u.hocVan) setEducation(u.hocVan);
+                if (u.kyNang) setSkills(u.kyNang);
+            } else {
+                // fallback to empty
+                setProfile(null);
+                setEducation([]);
+                setSkills([]);
+            }
         } catch (err) {
             console.error('Failed to fetch profile:', err);
         } finally {
@@ -68,33 +52,48 @@ export const useProfile = () => {
         formData.append('avatar', file);
 
         try {
-            // const response = await fetch('/api/student/profile/avatar', {
-            //   method: 'POST',
-            //   body: formData
-            // });
-            // const data = await response.json();
-
-            // Mock implementation
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setProfile((prev) => ({ ...prev, avatar: reader.result }));
-            };
-            reader.readAsDataURL(file);
+            // If the backend supports avatar upload, call the endpoint
+            const res = await api.postForm('/users/upload-avatar', formData);
+            // backend returns { success: true, user }
+            if (res && res.success && res.user) {
+                const u = res.user;
+                setProfile((prev) => ({ ...prev, avatar: u.avatar || u.hinhDaiDien || prev?.avatar }));
+                return { success: true, user: u };
+            } else {
+                // fallback to local preview
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setProfile((prev) => ({ ...prev, avatar: reader.result }));
+                };
+                reader.readAsDataURL(file);
+            }
         } catch (err) {
             console.error('Failed to update avatar:', err);
         }
     };
 
+    const updateProfile = async (updates) => {
+        try {
+            const res = await api.put('/auth/update-profile', updates);
+            if (res && res.success && res.user) {
+                const u = res.user;
+                setProfile((prev) => ({ ...prev, name: u.hoVaTen || u.name || prev?.name }));
+                return { success: true, user: u };
+            }
+            return { success: false };
+        } catch (err) {
+            console.error('Failed to update profile:', err);
+            return { success: false, error: err?.message };
+        }
+    };
+
     const addSkill = async (skill) => {
         try {
-            // await fetch('/api/student/skills', {
-            //   method: 'POST',
-            //   headers: { 'Content-Type': 'application/json' },
-            //   body: JSON.stringify({ skill })
-            // });
-
             if (!skills.includes(skill)) {
-                setSkills((prev) => [...prev, skill]);
+                const newSkills = [...skills, skill];
+                // persist to backend via update-profile endpoint
+                await updateProfile({ kyNang: newSkills });
+                setSkills(newSkills);
             }
         } catch (err) {
             console.error('Failed to add skill:', err);
@@ -103,13 +102,21 @@ export const useProfile = () => {
 
     const removeSkill = async (skill) => {
         try {
-            // await fetch(`/api/student/skills/${skill}`, {
-            //   method: 'DELETE'
-            // });
-
-            setSkills((prev) => prev.filter((s) => s !== skill));
+            const newSkills = skills.filter((s) => s !== skill);
+            await updateProfile({ kyNang: newSkills });
+            setSkills(newSkills);
         } catch (err) {
             console.error('Failed to remove skill:', err);
+        }
+    };
+
+    const addEducation = async (edu) => {
+        try {
+            const newEdu = [...(education || []), edu];
+            await updateProfile({ hocVan: newEdu });
+            setEducation(newEdu);
+        } catch (err) {
+            console.error('Failed to add education:', err);
         }
     };
 
@@ -121,6 +128,8 @@ export const useProfile = () => {
         updateAvatar,
         addSkill,
         removeSkill,
-        refetch: fetchProfile
+        addEducation,
+        refetch: fetchProfile,
+        updateProfile
     };
 };

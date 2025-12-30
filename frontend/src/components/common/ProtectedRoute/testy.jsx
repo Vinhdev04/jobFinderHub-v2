@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }) => {
   const checkAuth = async () => {
     try {
       // Check if user is logged in (check token, call API, etc.)
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem('token');
       
       if (token) {
         // Call API to get user info
@@ -108,7 +108,7 @@ export const AuthProvider = ({ children }) => {
         }
       };
       
-      localStorage.setItem('auth_token', data.token);
+      localStorage.setItem('token', data.token);
       setUser(data.user);
       setIsAuthenticated(true);
       
@@ -119,7 +119,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('auth_token');
+    localStorage.removeItem('token');
     setUser(null);
     setIsAuthenticated(false);
   };

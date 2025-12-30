@@ -11,6 +11,7 @@ import JobApplyPage from '@pages/JobApplyPage.jsx';
 
 // Dashboards
 import StudentDashboard from '@pages/StudentDashboard.jsx';
+import StudentApplicationDetail from '@pages/StudentApplicationDetail.jsx';
 import RecruiterDashboard from '@pages/RecruiterDashboard.jsx';
 import CompanyDashboard from '@pages/CompanyDashboard.jsx';
 import TeacherDashboard from '@pages/TeacherDashboard.jsx';
@@ -142,6 +143,30 @@ export const routes = [
         layout: 'dashboard',
         meta: {
             title: 'Dashboard Sinh viên',
+            requiresAuth: true,
+            requiredRole: 'student',
+            showNavbar: false,
+            showFooter: false
+        }
+    },
+    {
+        path: '/student/applications',
+        element: StudentDashboard,
+        layout: 'dashboard',
+        meta: {
+            title: 'Đơn ứng tuyển',
+            requiresAuth: true,
+            requiredRole: 'student',
+            showNavbar: false,
+            showFooter: false
+        }
+    },
+    {
+        path: '/student/applications/:id',
+        element: StudentApplicationDetail,
+        layout: 'dashboard',
+        meta: {
+            title: 'Chi tiết đơn ứng tuyển',
             requiresAuth: true,
             requiredRole: 'student',
             showNavbar: false,

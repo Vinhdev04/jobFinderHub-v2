@@ -31,33 +31,19 @@ const JobApplyPage = () => {
         fetchJob();
     }, [id]);
 
-    // Convert file to base64 string
-    const fileToBase64 = (file) => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = (err) => reject(err);
-            reader.readAsDataURL(file);
-        });
-    };
+    // No longer need base64 conversion when using multipart upload
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!job) return;
         setSubmitting(true);
         try {
-            let cvDinhKem = null;
-            if (cvFile) {
-                cvDinhKem = await fileToBase64(cvFile);
-            }
+            const formData = new FormData();
+            formData.append('tinTuyenDung', id);
+            formData.append('thuGioiThieu', coverLetter || '');
+            if (cvFile) formData.append('cv', cvFile);
 
-            const payload = {
-                tinTuyenDung: id,
-                thuGioiThieu: coverLetter,
-                cvDinhKem
-            };
-
-            const res = await applicationService.createApplication(payload);
+            const res = await applicationService.createApplication(formData, true);
             if (res && res.success) {
                 toast.success('Ứng tuyển thành công');
                 navigate('/student/applications');

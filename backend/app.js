@@ -13,6 +13,29 @@ const {
     isRecruiter,
     isCandidate,
 } = require('./middleware/auth');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+// Configure multer for CV uploads
+const uploadsDir = path.join(__dirname, 'public', 'uploads', 'cvs');
+// Ensure uploads directory exists
+try {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+} catch (err) {
+    console.warn('Could not create uploads directory:', uploadsDir, err.message);
+}
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, uploadsDir);
+    },
+    filename: function (req, file, cb) {
+        const ext = path.extname(file.originalname);
+        const name = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+        cb(null, name);
+    }
+});
+const upload = multer({ storage });
 
 // Connect DB
 connectDB();
@@ -33,6 +56,7 @@ app.use(morgan('dev'));
 // ========================
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
+app.use('/api/applications', require('./routes/applications'));
 
 // ========================
 // CONTROLLERS - ✅ FIXED: controllers/ thay vì controller/
@@ -76,7 +100,7 @@ app.put('/api/jobs/:id/approve', protect, isAdmin, jobController.approveJob);
 // ========================
 app.get('/api/applications', applicationController.getAllApplications);
 app.get('/api/applications/:id', applicationController.getApplicationById);
-app.post('/api/applications', protect, isCandidate, applicationController.createApplication);
+app.post('/api/applications', protect, isCandidate, upload.single('cv'), applicationController.createApplication);
 app.put('/api/applications/:id/status', protect, applicationController.updateApplicationStatus);
 app.delete('/api/applications/:id', protect, applicationController.withdrawApplication);
 app.get('/api/applications/candidate/:studentId', protect, applicationController.getApplicationsByStudent);

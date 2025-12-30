@@ -1,5 +1,7 @@
 // backend/controllers/userController.js
 const User = require('../models/User');
+const path = require('path');
+const fs = require('fs');
 
 /**
  * @desc    Lấy tất cả users (Admin/Giáo vụ only)
@@ -284,5 +286,30 @@ exports.getUserStats = async (req, res, next) => {
     } catch (error) {
         console.error('❌ GetUserStats error:', error);
         next(error);
+    }
+};
+
+/**
+ * @desc Upload avatar for current user
+ * @route POST /api/users/upload-avatar
+ * @access Private
+ */
+exports.uploadAvatar = async (req, res, next) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: 'Không có file' });
+        }
+
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ success: false, message: 'Không tìm thấy user' });
+
+        const relPath = `/uploads/avatars/${req.file.filename}`;
+        user.avatar = relPath;
+        await user.save();
+
+        return res.status(200).json({ success: true, message: 'Cập nhật avatar thành công', user });
+    } catch (err) {
+        console.error('❌ UploadAvatar error:', err);
+        next(err);
     }
 };

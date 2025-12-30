@@ -80,17 +80,12 @@ exports.getApplicationById = async (req, res, next) => {
  */
 exports.createApplication = async (req, res, next) => {
     try {
-        const {
-            tinTuyenDung,
-            cvDinhKem,
-            thuGioiThieu
-        } = req.body;
+        // Expect multipart/form-data handled by multer
+        const { tinTuyenDung, thuGioiThieu } = req.body;
+        const cvFile = req.file; // multer places file at req.file
 
         if (!tinTuyenDung) {
-            return res.status(400).json({
-                success: false,
-                message: 'Vui lòng chọn bài đăng việc làm'
-            });
+            return res.status(400).json({ success: false, message: 'Vui lòng chọn bài đăng việc làm' });
         }
 
         // Kiểm tra bài đăng tồn tại
@@ -103,16 +98,18 @@ exports.createApplication = async (req, res, next) => {
         }
 
         // Kiểm tra đã ứng tuyển chưa
-        const existingApplication = await Application.findOne({
-            tinTuyenDung,
-            ungVien: req.user.id
-        });
-
+        const existingApplication = await Application.findOne({ tinTuyenDung, ungVien: req.user.id });
         if (existingApplication) {
-            return res.status(400).json({
-                success: false,
-                message: 'Bạn đã ứng tuyển bài đăng này rồi'
-            });
+            return res.status(400).json({ success: false, message: 'Bạn đã ứng tuyển bài đăng này rồi' });
+        }
+
+        // Prepare CV attachment info
+        let cvDinhKem = null;
+        if (cvFile) {
+            cvDinhKem = {
+                tenFile: cvFile.originalname,
+                duongDan: `/uploads/cvs/${cvFile.filename}`
+            };
         }
 
         // Tạo đơn ứng tuyển
@@ -121,19 +118,19 @@ exports.createApplication = async (req, res, next) => {
             ungVien: req.user.id,
             cvDinhKem,
             thuGioiThieu,
-            lichSuTrangThai: [{
-                trangThai: 'dang_xem_xet',
-                nguoiThayDoi: req.user.id
-            }]
+            lichSuTrangThai: [{ trangThai: 'dang_xem_xet', nguoiThayDoi: req.user.id }]
         });
 
         // Cập nhật số lượng ứng tuyển của bài đăng
         job.soLuongUngTuyen = (job.soLuongUngTuyen || 0) + 1;
         await job.save();
 
-        const populatedApplication = await application
-            .populate('tinTuyenDung')
-            .populate('ungVien');
+        // Populate related fields on the created document
+        await application.populate([
+            { path: 'tinTuyenDung' },
+            { path: 'ungVien' }
+        ]);
+        const populatedApplication = application;
 
         // Gửi thông báo cho nhà tuyển dụng
         // (Sẽ implement sau khi có notification service)
@@ -190,10 +187,13 @@ exports.updateApplicationStatus = async (req, res, next) => {
 
         await application.save();
 
-        const updatedApplication = await application
-            .populate('tinTuyenDung')
-            .populate('ungVien')
-            .populate('lichSuTrangThai.nguoiThayDoi', 'hoTen');
+        // Populate related fields on the updated document
+        await application.populate([
+            { path: 'tinTuyenDung' },
+            { path: 'ungVien' },
+            { path: 'lichSuTrangThai.nguoiThayDoi', select: 'hoTen' }
+        ]);
+        const updatedApplication = application;
 
         return res.status(200).json({
             success: true,

@@ -34,8 +34,13 @@ GET /api/interviews/:id
 import axios from 'axios';
 
 // Create axios instance
+// Ensure base URL always points to the API root (ends with '/api')
+const rawBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const normalizedBase = rawBase.replace(/\/+$/g, '');
+const apiBase = normalizedBase.endsWith('/api') ? normalizedBase : `${normalizedBase}/api`;
+
 const api = axios.create({
-    baseURL:  import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+    baseURL: apiBase,
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json'
@@ -114,5 +119,10 @@ api.interceptors.response.use(
         return Promise.reject(data);
     }
 );
+
+// Helper to send form data with axios instance
+api.postForm = (url, formData, config = {}) => {
+    return api.post(url, formData, { headers: { 'Content-Type': 'multipart/form-data' }, ...config });
+};
 
 export default api;

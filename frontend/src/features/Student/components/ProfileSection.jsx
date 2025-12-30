@@ -10,7 +10,8 @@ const ProfileSection = ({
     address,
     major,
     avatar,
-    onUpdateAvatar
+    onUpdateAvatar,
+    onEditProfile
 }) => {
     return (
         <div className='profile-section'>
@@ -93,12 +94,17 @@ const ProfileSection = ({
                     </div>
                     <h3 className='profile-section__name'>{name}</h3>
                     <p className='profile-section__major'>{major}</p>
-                    <button
-                        className='profile-section__btn'
-                        onClick={onUpdateAvatar}
-                    >
-                        Đổi ảnh đại diện
-                    </button>
+                    <div style={{display: 'flex', gap: 8}}>
+                        <button
+                            className='profile-section__btn'
+                            onClick={onUpdateAvatar}
+                        >
+                            Đổi ảnh đại diện
+                        </button>
+                        <button className='profile-section__btn profile-section__btn--secondary' onClick={onEditProfile}>
+                            Chỉnh sửa hồ sơ
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

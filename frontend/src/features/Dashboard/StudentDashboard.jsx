@@ -15,17 +15,26 @@ import {
     useInterviews,
     useProfile
 } from '@features/Student/hooks';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from '@hooks/useToast.jsx';
 import './StudentDashboard.css';
+import EditProfileModal from '@features/Student/components/EditProfileModal';
+import SkillModal from '@features/Student/components/SkillModal';
+import EducationModal from '@features/Student/components/EducationModal';
 
 const StudentDashboard = () => {
     const [activeTab, setActiveTab] = useState('overview');
 
     // Use custom hooks
+    const [filterStatus, setFilterStatus] = useState('all');
+    const [editProfileOpen, setEditProfileOpen] = useState(false);
+    const [educationModalOpen, setEducationModalOpen] = useState(false);
     const {
         applications,
         loading: appsLoading,
-        withdrawApplication
-    } = useApplications();
+        withdrawApplication,
+        refetch: refetchApplications
+    } = useApplications(filterStatus);
     const {
         interviews,
         loading: interviewsLoading,
@@ -38,17 +47,19 @@ const StudentDashboard = () => {
         loading: profileLoading,
         updateAvatar,
         addSkill,
-        removeSkill
+        removeSkill,
+        updateProfile
     } = useProfile();
+    const navigate = useNavigate();
+    const { toast } = useToast();
+    const [skillModalOpen, setSkillModalOpen] = useState(false);
 
-    // Mock stats - replace with real data from hooks
+    // Real stats derived from hooks (fallback to 0 instead of mock numbers)
     const stats = {
-        applied: applications?.length || 12,
-        pending:
-            applications?.filter((app) => app.status === 'pending').length || 5,
-        invited: interviews?.length || 3,
-        accepted:
-            applications?.filter((app) => app.status === 'accepted').length || 1
+        applied: applications?.length || 0,
+        pending: (applications && applications.filter((app) => app.status === 'pending').length) || 0,
+        invited: interviews?.length || 0,
+        accepted: (applications && applications.filter((app) => app.status === 'accepted').length) || 0
     };
 
     // Mock notifications
@@ -87,14 +98,14 @@ const StudentDashboard = () => {
     ];
 
     const handleViewDetails = (id) => {
-        console.log('View details:', id);
-        // Navigate to details page
+        navigate(`/student/applications/${id}`);
     };
 
     const handleWithdraw = async (id) => {
-        if (window.confirm('Bạn có chắc muốn rút đơn ứng tuyển này?')) {
-            await withdrawApplication(id);
-        }
+        // perform withdraw without blocking JS confirm dialog
+        await withdrawApplication(id);
+        refetchApplications();
+        toast.success('Đã rút đơn ứng tuyển');
     };
 
     const handleJoinInterview = (id) => {
@@ -115,15 +126,27 @@ const StudentDashboard = () => {
     };
 
     const handleAddSkill = () => {
-        const skill = prompt('Nhập tên kỹ năng:');
+        setSkillModalOpen(true);
+    };
+
+    const handleSkillSave = async (skill) => {
         if (skill && skill.trim()) {
-            addSkill(skill.trim());
+            await addSkill(skill.trim());
+            toast.success('Đã thêm kỹ năng');
+            setSkillModalOpen(false);
+        } else {
+            toast.error('Kỹ năng không hợp lệ');
         }
     };
 
     const handleAddEducation = () => {
-        console.log('Add education');
-        // Open modal or navigate to add education page
+        setEducationModalOpen(true);
+    };
+
+    const handleEducationSave = async (edu) => {
+        await addEducation(edu);
+        toast.success('Đã thêm học vấn');
+        setEducationModalOpen(false);
     };
 
     const renderTabContent = () => {
@@ -216,12 +239,26 @@ const StudentDashboard = () => {
                                             <QuickAction
                                                 key={action.id}
                                                 {...action}
-                                                onClick={() =>
-                                                    console.log(
-                                                        'Action:',
-                                                        action.label
-                                                    )
-                                                }
+                                                onClick={() => {
+                                                    if (action.label === 'Cập nhật CV') {
+                                                        const input = document.createElement('input');
+                                                        input.type = 'file';
+                                                        input.accept = '.pdf,.doc,.docx';
+                                                        input.onchange = (e) => {
+                                                            const file = e.target.files[0];
+                                                            if (file) {
+                                                                toast.info('CV đã được chọn (chưa upload)');
+                                                            }
+                                                        };
+                                                        input.click();
+                                                    } else if (action.label === 'Tìm việc mới') {
+                                                        navigate('/jobs');
+                                                    } else if (action.label === 'Tin nhắn') {
+                                                        toast.info('Chức năng tin nhắn chưa có');
+                                                    } else {
+                                                        console.log('Action:', action.label);
+                                                    }
+                                                }}
                                             />
                                         ))}
                                     </div>
@@ -238,15 +275,13 @@ const StudentDashboard = () => {
                             <h2 className='dashboard__section-title'>
                                 Tất cả đơn ứng tuyển
                             </h2>
-                            <select className='dashboard__filter'>
-                                <option value='all'>Tất cả trạng thái</option>
-                                <option value='pending'>Đang xem xét</option>
-                                <option value='reviewing'>
-                                    Được mời phỏng vấn
-                                </option>
-                                <option value='accepted'>Đã nhận</option>
-                                <option value='rejected'>Từ chối</option>
-                            </select>
+                                    <select className='dashboard__filter' value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+                                            <option value='all'>Tất cả trạng thái</option>
+                                            <option value='dang_xem_xet'>Đang xem xét</option>
+                                            <option value='duoc_moi_phong_van'>Được mời phỏng vấn</option>
+                                            <option value='da_nhan'>Đã nhận</option>
+                                            <option value='tu_choi'>Từ chối</option>
+                                        </select>
                         </div>
                         <div className='dashboard__applications-list'>
                             {applications &&
@@ -297,6 +332,7 @@ const StudentDashboard = () => {
                             <ProfileSection
                                 {...profile}
                                 onUpdateAvatar={handleUpdateAvatar}
+                                onEditProfile={() => setEditProfileOpen(true)}
                             />
                         )}
 
@@ -373,6 +409,20 @@ const StudentDashboard = () => {
         }
     };
 
+    const handleSaveProfile = async (updates) => {
+        const result = await updateProfile(updates);
+        if (result && result.success) {
+            setEditProfileOpen(false);
+            toast.success('Cập nhật hồ sơ thành công');
+            // refresh profile data
+            // useProfile provides refetch via refetch()
+            // simple reload as fallback
+            window.location.reload();
+        } else {
+            toast.error('Cập nhật thất bại');
+        }
+    };
+
     return (
         <div className=''>
             {/* Header */}
@@ -380,7 +430,7 @@ const StudentDashboard = () => {
                 <div className='dashboard__header-content'>
                     <h1 className='dashboard__title'>Dashboard Sinh viên</h1>
                     <p className='dashboard__subtitle'>
-                        Chào mừng trở lại, {profile?.name || 'Nguyễn Văn A'}
+                        Chào mừng trở lại, {profile?.name || profile?.hoVaTen || 'Người dùng'}
                     </p>
                 </div>
                 <button className='dashboard__search-btn'>
@@ -458,6 +508,9 @@ const StudentDashboard = () => {
 
             {/* Content */}
             <div className='dashboard__content'>{renderTabContent()}</div>
+            <EditProfileModal open={editProfileOpen} onClose={() => setEditProfileOpen(false)} profile={profile} onSave={handleSaveProfile} />
+            <SkillModal open={skillModalOpen} onClose={() => setSkillModalOpen(false)} onSave={handleSkillSave} />
+            <EducationModal open={educationModalOpen} onClose={() => setEducationModalOpen(false)} onSave={handleEducationSave} />
         </div>
     );
 };

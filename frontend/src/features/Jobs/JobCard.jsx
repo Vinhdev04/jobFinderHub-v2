@@ -3,10 +3,12 @@
 import React from 'react';
 import { MapPin, DollarSign, Clock, Users, Heart, Building2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@hooks/useAuth';
 import './JobCard.css';
 
 const JobCard = ({ job, isFavorite, toggleFavorite }) => {
     const navigate = useNavigate();
+    const { isAuthenticated } = useAuth();
 
     // Format salary
     const formatSalary = () => {
@@ -64,6 +66,11 @@ const JobCard = ({ job, isFavorite, toggleFavorite }) => {
 
     // Navigate to apply
     const handleApply = () => {
+        // If not authenticated, redirect to login and preserve destination
+        if (!isAuthenticated) {
+            navigate('/login', { state: { from: `/jobs/${job._id}/apply` } });
+            return;
+        }
         navigate(`/jobs/${job._id}/apply`);
     };
 

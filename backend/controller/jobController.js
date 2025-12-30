@@ -109,10 +109,18 @@ exports.getJobById = async (req, res, next) => {
         const jobObj = job.toObject ? job.toObject() : job;
         jobObj.chiTiet = jobDetail || null;
 
-        return res.status(200).json({
-            success: true,
-            data: jobObj
-        });
+        // Also include a quick check whether current user already applied (if authenticated)
+        if (req.user && req.user.id) {
+            try {
+                const Application = require('../models/Application');
+                const existingApp = await Application.findOne({ tinTuyenDung: job._id, ungVien: req.user.id });
+                jobObj._alreadyApplied = !!existingApp;
+            } catch (err) {
+                console.error('❌ Check existing application error:', err.message);
+            }
+        }
+
+        return res.status(200).json({ success: true, data: jobObj });
 
     } catch (error) {
         console.error('❌ GetJobById error:', error);

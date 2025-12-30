@@ -371,7 +371,7 @@ exports.changePassword = async (req, res, next) => {
  */
 exports.updateProfile = async (req, res, next) => {
     try {
-        const { hoVaTen, soDienThoai, diaChi } = req.body;
+        const { hoVaTen, soDienThoai, diaChi, kyNang, hocVan } = req.body;
 
         const user = await User.findById(req.user.id);
 
@@ -384,7 +384,15 @@ exports.updateProfile = async (req, res, next) => {
 
         if (hoVaTen) user.hoVaTen = hoVaTen;
         if (soDienThoai) user.soDienThoai = soDienThoai;
-        
+
+        // Optional: persist skills and education
+        if (Array.isArray(kyNang)) {
+            user.kyNang = kyNang;
+        }
+        if (Array.isArray(hocVan)) {
+            user.hocVan = hocVan;
+        }
+
         if (user.vaiTro === 'sinh_vien' && diaChi) {
             if (!user.thongTinSinhVien) {
                 user.thongTinSinhVien = {};

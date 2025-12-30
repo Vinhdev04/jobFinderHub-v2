@@ -1,5 +1,7 @@
 // ==================== hooks/useInterviews.js ====================
 import { useState, useEffect } from 'react';
+import { useToast } from '@hooks/useToast.jsx';
+import api from '@services/api';
 
 export const useInterviews = () => {
     const [interviews, setInterviews] = useState([]);
@@ -13,54 +15,45 @@ export const useInterviews = () => {
     const fetchInterviews = async () => {
         try {
             setLoading(true);
+            const me = await api.get('/auth/me');
+            const studentId = me?.user?._id || me?.user?.id;
+            if (!studentId) {
+                setInterviews([]);
+                return;
+            }
 
-            // Mock data - Replace with actual API call
-            // const response = await fetch('/api/student/interviews');
-            // const data = await response.json();
-
-            await new Promise((resolve) => setTimeout(resolve, 500));
-
-            const mockData = [
-                {
-                    id: 1,
-                    company: 'VNG Corporation',
-                    position: 'Thực tập sinh Marketing Digital',
-                    date: '20/01/2024',
-                    time: '14:00',
-                    location: 'Google Meet',
-                    interviewer: 'Nguyễn Văn A - HR Manager',
-                    type: 'online',
-                    status: 'online',
-                    meetingLink: 'https://meet.google.com/abc-defg-hij'
-                },
-                {
-                    id: 2,
-                    company: 'Shopee Vietnam',
-                    position: 'Thực tập sinh Data Analyst',
-                    date: '22/01/2024',
-                    time: '10:00',
-                    location: 'Tầng 5, Tòa nhà Viettel, Hà Nội',
-                    interviewer: 'Trần Thị B - Team Lead',
-                    type: 'offline',
-                    status: 'offline',
-                    meetingLink: null
-                }
-            ];
-
-            setInterviews(mockData);
+            const res = await api.get(`/interviews/candidate/${studentId}`);
+            if (res && res.success && Array.isArray(res.data)) {
+                setInterviews(res.data.map((it) => ({
+                    id: it._id || it.id,
+                    company: it.tinTuyenDung?.congTy?.tenCongTy || it.tinTuyenDung?.congTy || 'Công ty',
+                    position: it.tinTuyenDung?.tieuDe || it.tinTuyenDung?.viTri || 'Vị trí',
+                    date: it.ngayPhongVan || it.date || '',
+                    time: it.gio || it.time || '',
+                    location: it.hinhThuc === 'online' ? (it.hinhThucChiTiet || 'Online') : (it.diaDiem || 'TBA'),
+                    interviewer: it.nguoiPhongVan?.hoTen || it.nguoiPhongVan || '',
+                    type: it.hinhThuc || (it.meetingLink ? 'online' : 'offline'),
+                    meetingLink: it.meetingLink || null,
+                    status: it.trangThai || 'scheduled'
+                })));
+            } else {
+                setInterviews([]);
+            }
         } catch (err) {
-            setError(err.message);
+            console.error('Failed to fetch interviews:', err);
+            setError(err?.message || 'Không tải được lịch phỏng vấn');
         } finally {
             setLoading(false);
         }
     };
 
+    const { toast } = useToast();
     const joinInterview = (id) => {
         const interview = interviews.find((i) => i.id === id);
         if (interview?.meetingLink) {
             window.open(interview.meetingLink, '_blank');
         } else {
-            alert('Link phỏng vấn không khả dụng');
+            toast.error('Link phỏng vấn không khả dụng');
         }
     };
 
