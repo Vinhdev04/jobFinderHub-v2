@@ -2,7 +2,10 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-// Bảo vệ routes - yêu cầu đăng nhập
+/**
+ * @desc    Bảo vệ routes - yêu cầu đăng nhập
+ * @access  Private
+ */
 exports.protect = async (req, res, next) => {
     try {
         let token;
@@ -18,12 +21,12 @@ exports.protect = async (req, res, next) => {
         if (!token) {
             return res.status(401).json({
                 success: false,
-                message: 'Vui lòng đăng nhập để truy cập' 
+                message: 'Vui lòng đăng nhập để truy cập'
             });
         }
 
         // Verify token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret_key_here');
 
         // Tìm user
         const user = await User.findById(decoded.id).select('-matKhau');
@@ -46,6 +49,22 @@ exports.protect = async (req, res, next) => {
         req.user = user;
         next();
     } catch (error) {
+        console.error('❌ Auth error:', error.message);
+        
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(401).json({
+                success: false,
+                message: 'Token không hợp lệ'
+            });
+        }
+
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({
+                success: false,
+                message: 'Token đã hết hạn'
+            });
+        }
+
         return res.status(401).json({
             success: false,
             message: 'Token không hợp lệ hoặc đã hết hạn'
@@ -53,10 +72,14 @@ exports.protect = async (req, res, next) => {
     }
 };
 
-// Phân quyền theo vai trò
+/**
+ * @desc    Phân quyền theo vai trò
+ * @param   {...roles} Các vai trò được phép
+ * @access  Private
+ */
 exports.authorize = (...roles) => {
     return (req, res, next) => {
-        if (!roles.includes(req.user.vaiTro)) {
+        if (!roles.includes(req.user.loaiTaiKhoan)) {
             return res.status(403).json({
                 success: false,
                 message: 'Bạn không có quyền truy cập'
@@ -64,4 +87,46 @@ exports.authorize = (...roles) => {
         }
         next();
     };
+};
+
+/**
+ * @desc    Kiểm tra xem user là admin
+ * @access  Private
+ */
+exports.isAdmin = (req, res, next) => {
+    if (req.user.loaiTaiKhoan !== 'admin') {
+        return res.status(403).json({
+            success: false,
+            message: 'Chỉ admin mới có thể truy cập'
+        });
+    }
+    next();
+};
+
+/**
+ * @desc    Kiểm tra xem user là nhà tuyển dụng
+ * @access  Private
+ */
+exports.isRecruiter = (req, res, next) => {
+    if (req.user.loaiTaiKhoan !== 'nha_tuyen_dung') {
+        return res.status(403).json({
+            success: false,
+            message: 'Chỉ nhà tuyển dụng mới có thể truy cập'
+        });
+    }
+    next();
+};
+
+/**
+ * @desc    Kiểm tra xem user là ứng viên
+ * @access  Private
+ */
+exports.isCandidate = (req, res, next) => {
+    if (req.user.loaiTaiKhoan !== 'ung_vien') {
+        return res.status(403).json({
+            success: false,
+            message: 'Chỉ ứng viên mới có thể truy cập'
+        });
+    }
+    next();
 };
