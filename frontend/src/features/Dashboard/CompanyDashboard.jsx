@@ -9,6 +9,7 @@ import './CompanyDashboard.css';
 import StatCard from '@features/Student/components/StatCard';
 import Modal from '../../components/common/Modal/Modal';
 import { useToast } from '@hooks/useToast';
+import { handleApiError } from '@utils/apiErrorHandler';
 import RecruiterForm from '@features/Company/components/RecruiterForm';
 const CompanyDashboard = () => {
     const [activeTab, setActiveTab] = useState('overview');
@@ -91,7 +92,7 @@ const CompanyDashboard = () => {
             toastCtx.toast.success('Xóa tin tuyển dụng thành công');
         } catch (err) {
             console.error('Delete job error', err);
-            toastCtx.toast.error(err.message || 'Lỗi khi xóa tin');
+            handleApiError(toastCtx.toast, err, 'Lỗi khi xóa tin');
         }
     };
 
@@ -132,7 +133,7 @@ const CompanyDashboard = () => {
             setSelectedRecruiter(null);
         } catch (err) {
             console.error('Edit recruiter error', err);
-            toastCtx.toast.error(err.message || 'Lỗi khi cập nhật');
+            handleApiError(toastCtx.toast, err, 'Lỗi khi cập nhật');
         }
     };
 
@@ -146,7 +147,7 @@ const CompanyDashboard = () => {
             toastCtx.toast.success('Xóa nhà tuyển dụng thành công');
         } catch (err) {
             console.error('Delete recruiter error', err);
-            toastCtx.toast.error(err.message || 'Lỗi khi xóa');
+            handleApiError(toastCtx.toast, err, 'Lỗi khi xóa');
         }
     };
 

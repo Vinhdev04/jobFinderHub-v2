@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import api from '@services/api';
 import { useToast } from '@hooks/useToast';
+import { handleApiError } from '@utils/apiErrorHandler';
+import authService from '@services/authService';
 
 const AdminSettingsModal = ({ open, onClose }) => {
     const [settings, setSettings] = useState({});
@@ -24,7 +26,9 @@ const AdminSettingsModal = ({ open, onClose }) => {
 
     const handleChange = (k, v) => setSettings({ ...settings, [k]: v });
 
-    const toast = useToast();
+    const { toast } = useToast();
+    const currentUser = authService.getCurrentUser();
+    const isAdmin = currentUser?.vaiTro === 'quan_tri_he_thong';
 
     const [addingKey, setAddingKey] = useState(false);
     const [newKey, setNewKey] = useState('');
@@ -35,23 +39,24 @@ const AdminSettingsModal = ({ open, onClose }) => {
     };
 
     const handleConfirmAddKey = () => {
-        if (!newKey) return toast.toast.warning('Vui lòng nhập key');
+        if (!newKey) return toast.warning('Vui lòng nhập key');
         handleChange(newKey, '');
         setAddingKey(false);
         setNewKey('');
     };
 
     const handleSave = async () => {
+        if (!isAdmin) {
+            return toast.error('Bạn không có quyền thay đổi cấu hình hệ thống');
+        }
         setSaving(true);
         try {
             await api.put('/admin/settings', settings);
-            toast.toast.success('Lưu cấu hình thành công');
+            toast.success('Lưu cấu hình thành công');
             onClose && onClose();
         } catch (err) {
             console.error('Save settings error', err);
-            toast.toast.error(
-                err && err.message ? err.message : 'Lỗi khi lưu settings'
-            );
+            handleApiError(toast, err, 'Lỗi khi lưu settings');
         } finally {
             setSaving(false);
         }

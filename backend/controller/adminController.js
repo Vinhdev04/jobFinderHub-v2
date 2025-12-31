@@ -116,3 +116,55 @@ exports.backupDatabase = async (req, res, next) => {
         next(err);
     }
 };
+
+/**
+ * @desc Seed teachers (development only)
+ * @route POST /api/admin/seed-teachers
+ * @access Private (Admin)
+ */
+exports.seedTeachers = async (req, res, next) => {
+    try {
+        if (process.env.NODE_ENV === 'production') {
+            return res
+                .status(403)
+                .json({ success: false, message: 'Not allowed in production' });
+        }
+
+        const Teacher = require('../models/Teacher');
+        const samples =
+            req.body && Array.isArray(req.body)
+                ? req.body
+                : [
+                      {
+                          hoVaTen: 'Nguyễn Văn A',
+                          email: 'a.teacher@example.com',
+                          maGiaoVien: 'GV001',
+                          boMon: 'CNTT',
+                          chucVu: 'Giảng viên',
+                          trangThai: 'hoat_dong'
+                      },
+                      {
+                          hoVaTen: 'Trần Thị B',
+                          email: 'b.teacher@example.com',
+                          maGiaoVien: 'GV002',
+                          boMon: 'Toán',
+                          chucVu: 'Giảng viên',
+                          trangThai: 'hoat_dong'
+                      }
+                  ];
+
+        await Teacher.deleteMany({});
+        const created = await Teacher.insertMany(samples);
+
+        return res
+            .status(201)
+            .json({
+                success: true,
+                message: 'Seeded teachers',
+                createdCount: created.length
+            });
+    } catch (err) {
+        console.error('Seed teachers error:', err.message);
+        next(err);
+    }
+};

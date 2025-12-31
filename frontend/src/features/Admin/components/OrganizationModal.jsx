@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import api from '@services/api';
 import styles from './OrganizationModal.module.css';
 import { useToast } from '@hooks/useToast';
+import { handleApiError } from '@utils/apiErrorHandler';
+import authService from '@services/authService';
 
 const OrganizationModal = ({
     open,
@@ -50,13 +52,18 @@ const OrganizationModal = ({
     const handleChange = (e) =>
         setForm({ ...form, [e.target.name]: e.target.value });
 
-    const toast = useToast();
+    const { toast } = useToast();
+    const currentUser = authService.getCurrentUser();
+    const isAdmin = currentUser?.vaiTro === 'quan_tri_he_thong';
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (mode === 'view') return onClose && onClose();
         setSaving(true);
         try {
+            if (!isAdmin) {
+                return toast.error('Bạn không có quyền tạo/sửa tổ chức');
+            }
             if (mode === 'create') {
                 await api.post('/companies', form);
             } else {
@@ -66,9 +73,7 @@ const OrganizationModal = ({
             onClose && onClose();
         } catch (err) {
             console.error('Organization save error', err);
-            toast.toast.error(
-                err && err.message ? err.message : 'Lỗi khi lưu tổ chức'
-            );
+            handleApiError(toast, err, 'Lỗi khi lưu tổ chức');
         } finally {
             setSaving(false);
         }

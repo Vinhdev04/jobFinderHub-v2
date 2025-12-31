@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Edit2, User } from 'lucide-react';
 import api from '@services/api';
+import { useToast } from '@hooks/useToast';
 import ManagerModal from './ManagerModal';
+import { handleApiError } from '@utils/apiErrorHandler';
+import authService from '@services/authService';
 
 const ManagersGrid = () => {
     const [managers, setManagers] = useState([]);
@@ -10,13 +13,23 @@ const ManagersGrid = () => {
     const [mode, setMode] = useState('create');
     const [selected, setSelected] = useState(null);
 
+    const { toast } = useToast();
+    const currentUser = authService.getCurrentUser();
+    const isAdmin = currentUser?.vaiTro === 'quan_tri_he_thong';
+
     const load = async () => {
         setLoading(true);
         try {
             const res = await api.get('/managers?limit=50&page=1');
-            if (res && res.managers) setManagers(res.managers);
+            // Support multiple shapes: { managers: [...] } or { data: [...] } or array
+            const list =
+                res && (res.managers || res.data || res)
+                    ? res.managers || res.data || res
+                    : [];
+            setManagers(Array.isArray(list) ? list : []);
         } catch (err) {
             console.error('Load managers error', err);
+            handleApiError(toast, err, 'Không thể tải danh sách nhân sự');
         } finally {
             setLoading(false);
         }
@@ -81,7 +94,14 @@ const ManagersGrid = () => {
                             <div className='org-actions'>
                                 <button
                                     className='btn btn-secondary'
-                                    onClick={() => handleEdit(m)}
+                                    onClick={() => {
+                                        if (!isAdmin) {
+                                            return toast.error(
+                                                'Bạn không có quyền chỉnh sửa nhân sự'
+                                            );
+                                        }
+                                        handleEdit(m);
+                                    }}
                                 >
                                     {' '}
                                     <Edit2 size={16} /> Sửa

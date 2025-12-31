@@ -20,4 +20,11 @@ router.get(
     adminController.backupDatabase
 );
 
+// Development-only: seed teachers
+router.post(
+    '/seed-teachers',
+    authorize('quan_tri_he_thong'),
+    adminController.seedTeachers
+);
+
 module.exports = router;

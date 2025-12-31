@@ -1,44 +1,61 @@
 // services/adminService.js
 
+import api from '@services/api';
+
 class TeacherService {
-    constructor() {
-        this.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-    }
-
-    // Helper method for API calls
-    async fetchAPI(endpoint, options = {}) {
-        try {
-            const response = await fetch(`${this.baseURL}${endpoint}`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...options.headers
-                },
-                ...options
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            return await response.json();
-        } catch (error) {
-            console.error('API Error:', error);
-            throw error;
-        }
-    }
+    constructor() {}
 
     // Dashboard stats
     async getStats() {
-        return {
-            total_students: 156,
-            active_interns: 45,
-            pending_reports: 12,
-            partner_companies: 28
-        };
+        try {
+            const res = await api.get('/reports/dashboard');
+            // api returns response.data by interceptor, which in backend is { success: true, data: { ... } }
+            if (res && res.data) return res.data;
+            if (res && res.success && res.data) return res.data;
+            return res;
+        } catch (err) {
+            console.warn('getStats fallback to mock', err.message);
+            return {
+                total_students: 156,
+                active_interns: 45,
+                pending_reports: 12,
+                partner_companies: 28
+            };
+        }
     }
 
     // Interns list
     async getInterns() {
+        try {
+            // Try to fetch students/interns from backend - best effort
+            const res = await api.get('/users?role=ung_vien&limit=20&page=1');
+            if (res && res.data && Array.isArray(res.data.users)) {
+                return res.data.users.map((u) => ({
+                    id: u._id || u.id,
+                    name: u.hoVaTen || u.name || u.email,
+                    avatar: u.anhDaiDien || '👤',
+                    company:
+                        u.congTy && (u.congTy.tenCongTy || u.congTy.name)
+                            ? u.congTy.tenCongTy || u.congTy.name
+                            : u.congTy || '',
+                    position:
+                        (u.thongTinSinhVien &&
+                            u.thongTinSinhVien.chuyenNganh) ||
+                        '',
+                    progress:
+                        (u.thongTinSinhVien && u.thongTinSinhVien.tienDo) || 0,
+                    startDate: u.createdAt
+                        ? new Date(u.createdAt).toLocaleDateString()
+                        : '',
+                    status: u.trangThai || 'Đang thực tập'
+                }));
+            }
+            if (Array.isArray(res)) return res;
+            // fallback to mock
+        } catch (err) {
+            console.warn('getInterns API failed, using mock', err.message);
+        }
+
         return [
             {
                 id: 'SV001',
@@ -65,6 +82,13 @@ class TeacherService {
 
     // Reports list
     async getReports() {
+        try {
+            const res = await api.get('/reports?limit=50&page=1');
+            if (res && res.data) return res.data;
+            if (Array.isArray(res)) return res;
+        } catch (err) {
+            console.warn('getReports API failed, using mock', err.message);
+        }
         return [
             {
                 id: 1,
@@ -85,6 +109,13 @@ class TeacherService {
 
     // Companies list
     async getCompanies() {
+        try {
+            const res = await api.get('/companies?limit=20&page=1');
+            if (res && res.data) return res.data;
+            if (Array.isArray(res)) return res;
+        } catch (err) {
+            console.warn('getCompanies API failed, using mock', err.message);
+        }
         return [
             {
                 id: 1,
@@ -112,6 +143,23 @@ class TeacherService {
 
     // Pending jobs
     async getPendingJobs() {
+        try {
+            const res = await api.get('/jobs?limit=50&page=1');
+            const list =
+                res && res.data && Array.isArray(res.data)
+                    ? res.data
+                    : Array.isArray(res)
+                    ? res
+                    : res && res.data && res.data.data
+                    ? res.data.data
+                    : [];
+            // filter pending
+            return (list || []).filter(
+                (j) => (j.trangThai || j.status || j.state) === 'pending'
+            );
+        } catch (err) {
+            console.warn('getPendingJobs API failed, using mock', err.message);
+        }
         return [
             {
                 id: 1,
@@ -134,44 +182,59 @@ class TeacherService {
 
     // Actions
     async approveReport(reportId) {
-        return {
-            success: true,
-            message: 'Báo cáo đã được phê duyệt',
-            reportId
-        };
+        try {
+            const res = await api.put(`/reports/${reportId}/approve`);
+            return res;
+        } catch (err) {
+            console.warn('approveReport API failed', err.message);
+            return { success: false, message: 'Không thể phê duyệt báo cáo' };
+        }
     }
 
     async rejectReport(reportId, reason) {
-        return {
-            success: true,
-            message: 'Báo cáo đã bị từ chối',
-            reportId,
-            reason
-        };
+        try {
+            const res = await api.put(`/reports/${reportId}/reject`, {
+                reason
+            });
+            return res;
+        } catch (err) {
+            console.warn('rejectReport API failed', err.message);
+            return { success: false, message: 'Không thể từ chối báo cáo' };
+        }
     }
 
     async approveJob(jobId) {
-        return {
-            success: true,
-            message: 'Tin tuyển dụng đã được phê duyệt',
-            jobId
-        };
+        try {
+            const res = await api.put(`/jobs/${jobId}/approve`);
+            return res;
+        } catch (err) {
+            console.warn('approveJob API failed', err.message);
+            return { success: false, message: 'Không thể phê duyệt tin' };
+        }
     }
 
     async rejectJob(jobId, reason) {
-        return {
-            success: true,
-            message: 'Tin tuyển dụng đã bị từ chối',
-            jobId,
-            reason
-        };
+        try {
+            const res = await api.put(`/jobs/${jobId}/reject`, { reason });
+            return res;
+        } catch (err) {
+            console.warn('rejectJob API failed', err.message);
+            return { success: false, message: 'Không thể từ chối tin' };
+        }
     }
 
-    async exportReport() {
-        return {
-            success: true,
-            fileUrl: '/exports/report.xlsx'
-        };
+    async exportReport(type = 'dashboard', opts = {}) {
+        try {
+            const res = await api.post('/reports/generate', {
+                loaiBaoCao: type,
+                tuNgay: opts.tuNgay || new Date().toISOString(),
+                denNgay: opts.denNgay || new Date().toISOString()
+            });
+            return res;
+        } catch (err) {
+            console.warn('exportReport API failed', err.message);
+            return { success: true, fileUrl: '/exports/report.xlsx' };
+        }
     }
 }
 

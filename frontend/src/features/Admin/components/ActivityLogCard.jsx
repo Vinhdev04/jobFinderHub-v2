@@ -12,7 +12,7 @@ import { useToast } from '@hooks/useToast';
 import '../styles/ActivityLogCard.css';
 
 const ActivityLogCard = () => {
-    const toast = useToast();
+    const { toast } = useToast();
     const [activities, setActivities] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -272,34 +272,17 @@ const ActivityLogCard = () => {
                     style={{ padding: '1rem', borderTop: '1px solid #e5e7eb' }}
                 >
                     <button
-                        onClick={() => {
+                        onClick={async () => {
                             console.log('🧪 Testing API manually...');
-                            fetch(
-                                `${
-                                    import.meta.env.VITE_API_URL ||
-                                    'http://localhost:5000'
-                                }/api/activities?limit=10&page=1`,
-                                {
-                                    headers: {
-                                        Authorization: `Bearer ${localStorage.getItem(
-                                            'token'
-                                        )}`
-                                    }
-                                }
-                            )
-                                .then((r) => r.json())
-                                .then((d) => {
-                                    console.log('✅ Manual test success:', d);
-                                    toast.toast.success(
-                                        'Kiểm tra xong — xem console'
-                                    );
-                                })
-                                .catch((e) => {
-                                    console.error('❌ Manual test failed:', e);
-                                    toast.toast.error(
-                                        'Kiểm tra thất bại — xem console'
-                                    );
-                                });
+                            try {
+                                await load();
+                                toast.success(
+                                    'Kiểm tra xong — xem phần Hoạt động gần đây'
+                                );
+                            } catch (e) {
+                                console.error('❌ Manual test failed:', e);
+                                toast.error('Kiểm tra thất bại — xem phần Lỗi');
+                            }
                         }}
                         style={{
                             padding: '0.5rem 1rem',

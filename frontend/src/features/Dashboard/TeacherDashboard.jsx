@@ -155,7 +155,7 @@ const TeacherDashboard = () => {
                             ) : (
                                 interns.map((intern) => (
                                     <InternCard
-                                        key={intern.id}
+                                        key={intern._id || intern.id}
                                         intern={intern}
                                     />
                                 ))
@@ -185,7 +185,7 @@ const TeacherDashboard = () => {
                                     )
                                     .map((report) => (
                                         <ReportCard
-                                            key={report.id}
+                                            key={report._id || report.id}
                                             report={report}
                                             onView={handleViewReport}
                                             onApprove={handleApproveReport}
@@ -210,7 +210,10 @@ const TeacherDashboard = () => {
                                 pendingJobs
                                     .filter((job) => job.status === 'pending')
                                     .map((job) => (
-                                        <JobCard key={job.id} job={job} />
+                                        <JobCard
+                                            key={job._id || job.id}
+                                            job={job}
+                                        />
                                     ))
                             )}
                         </div>
@@ -227,7 +230,7 @@ const TeacherDashboard = () => {
                             ) : (
                                 companies.map((company) => (
                                     <CompanyCard
-                                        key={company.id}
+                                        key={company._id || company.id}
                                         company={company}
                                     />
                                 ))

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Edit2, UserPlus } from 'lucide-react';
 import api from '@services/api';
 import TeacherModal from './TeacherModal';
+import confirmAction from '@utils/confirmAction';
+import { useToast } from '@hooks/useToast';
 
 const TeachersGrid = () => {
     const [teachers, setTeachers] = useState([]);
@@ -38,6 +40,24 @@ const TeachersGrid = () => {
         setSelected(t);
         setModalMode('edit');
         setModalOpen(true);
+    };
+
+    const toast = useToast();
+
+    const handleDelete = async (t) => {
+        const ok = await confirmAction(
+            `Bạn có chắc muốn xóa giáo viên ${t.hoVaTen || t.email || ''}?`
+        );
+        if (!ok) return;
+        try {
+            await api.delete(`/teachers/${t._id || t.id}`);
+            toast.toast.success('Đã xóa giáo viên');
+            // reload list
+            load();
+        } catch (err) {
+            console.error('Delete teacher error', err);
+            toast.toast.error(err.message || 'Lỗi khi xóa giáo viên');
+        }
     };
 
     return (
@@ -87,6 +107,13 @@ const TeachersGrid = () => {
                                     onClick={() => handleEdit(t)}
                                 >
                                     <Edit2 size={16} /> Sửa
+                                </button>
+                                <button
+                                    className='btn btn-danger'
+                                    style={{ marginLeft: 8 }}
+                                    onClick={() => handleDelete(t)}
+                                >
+                                    🗑️ Xóa
                                 </button>
                             </div>
                         </div>

@@ -1,5 +1,6 @@
 const Teacher = require('../models/Teacher');
 const Activity = require('../models/Activity');
+const TeacherSummary = require('../models/TeacherSummary');
 
 // GET /api/teachers
 exports.getTeachers = async (req, res, next) => {
@@ -69,6 +70,21 @@ exports.createTeacher = async (req, res, next) => {
             console.warn('Activity log failed:', e.message);
         }
 
+        // keep summary in sync
+        try {
+            await TeacherSummary.create({
+                teacherId: teacher._id,
+                hoVaTen: teacher.hoVaTen,
+                email: teacher.email,
+                maGiaoVien: teacher.maGiaoVien,
+                boMon: teacher.boMon,
+                chucVu: teacher.chucVu,
+                trangThai: teacher.trangThai
+            });
+        } catch (e) {
+            console.warn('TeacherSummary create failed:', e.message);
+        }
+
         res.status(201).json({
             success: true,
             message: 'Teacher created',
@@ -107,6 +123,24 @@ exports.updateTeacher = async (req, res, next) => {
             console.warn('Activity log failed:', e.message);
         }
 
+        // update summary
+        try {
+            await TeacherSummary.findOneAndUpdate(
+                { teacherId: teacher._id },
+                {
+                    hoVaTen: teacher.hoVaTen,
+                    email: teacher.email,
+                    maGiaoVien: teacher.maGiaoVien,
+                    boMon: teacher.boMon,
+                    chucVu: teacher.chucVu,
+                    trangThai: teacher.trangThai
+                },
+                { upsert: true }
+            );
+        } catch (e) {
+            console.warn('TeacherSummary update failed:', e.message);
+        }
+
         res.json({ success: true, message: 'Teacher updated', teacher });
     } catch (err) {
         next(err);
@@ -135,6 +169,13 @@ exports.deleteTeacher = async (req, res, next) => {
             });
         } catch (e) {
             console.warn('Activity log failed:', e.message);
+        }
+
+        // remove summary
+        try {
+            await TeacherSummary.deleteOne({ teacherId: req.params.id });
+        } catch (e) {
+            console.warn('TeacherSummary delete failed:', e.message);
         }
 
         res.json({ success: true, message: 'Teacher deleted' });

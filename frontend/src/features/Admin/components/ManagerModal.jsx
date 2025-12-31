@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import Modal from '@components/common/Modal/Modal';
 import api from '@services/api';
-import { useToast } from '@hooks/useToast';
+import { useToast } from '@hooks/useToast.jsx';
+import styles from './UserForm.module.css';
 
 const ManagerModal = ({
     open,
@@ -49,7 +51,7 @@ const ManagerModal = ({
         setForm((s) => ({ ...s, [name]: value }));
     };
 
-    const toast = useToast();
+    const { toast } = useToast();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -60,111 +62,115 @@ const ManagerModal = ({
             if (onSaved) onSaved();
         } catch (err) {
             console.error('Save manager error', err);
-            toast.toast.error(err.message || 'Lỗi khi lưu nhân sự');
+            // useToast returns { toast } with helpers
+            try {
+                toast?.toast?.error
+                    ? toast.toast.error(err.message || 'Lỗi khi lưu nhân sự')
+                    : toast?.error?.(err.message || 'Lỗi khi lưu nhân sự');
+            } catch (e) {
+                console.error('Toast error', e);
+            }
         } finally {
             setSaving(false);
         }
     };
 
-    if (!open) return null;
-
     return (
-        <div className='modal-overlay'>
-            <div className='modal'>
-                <div className='modal-header'>
-                    <h3>
-                        {mode === 'create'
-                            ? 'Thêm nhân sự'
-                            : 'Chỉnh sửa nhân sự'}
-                    </h3>
-                    <button className='btn' onClick={onClose}>
-                        Đóng
+        <Modal
+            isOpen={open}
+            onClose={onClose}
+            title={mode === 'create' ? 'Thêm nhân sự' : 'Chỉnh sửa nhân sự'}
+        >
+            <form onSubmit={handleSubmit} className={styles.formContainer}>
+                <div className={styles.formGroup}>
+                    <label>Họ và tên</label>
+                    <input
+                        name='hoVaTen'
+                        value={form.hoVaTen}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
+
+                <div className={styles.formGroup}>
+                    <label>Email</label>
+                    <input
+                        name='email'
+                        type='email'
+                        value={form.email}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
+
+                <div className={styles.formGroup}>
+                    <label>Số điện thoại</label>
+                    <input
+                        name='soDienThoai'
+                        value={form.soDienThoai}
+                        onChange={handleChange}
+                    />
+                </div>
+
+                <div className={styles.formGroup}>
+                    <label>Mã nhân viên</label>
+                    <input
+                        name='maNhanVien'
+                        value={form.maNhanVien}
+                        onChange={handleChange}
+                    />
+                </div>
+
+                <div className={styles.formGroup}>
+                    <label>Đơn vị</label>
+                    <input
+                        name='donVi'
+                        value={form.donVi}
+                        onChange={handleChange}
+                    />
+                </div>
+
+                <div className={styles.formGroup}>
+                    <label>Chức vụ</label>
+                    <input
+                        name='chucVu'
+                        value={form.chucVu}
+                        onChange={handleChange}
+                    />
+                </div>
+
+                <div className={styles.formGroup}>
+                    <label>Trạng thái</label>
+                    <select
+                        name='trangThai'
+                        value={form.trangThai}
+                        onChange={handleChange}
+                    >
+                        <option value='hoat_dong'>Hoạt động</option>
+                        <option value='tam_khoa'>Tạm khóa</option>
+                        <option value='nghi_viec'>Nghỉ việc</option>
+                    </select>
+                </div>
+
+                <div className={styles.formActions}>
+                    <button
+                        type='button'
+                        className={`${styles.btn} ${styles.btnSecondary}`}
+                        onClick={onClose}
+                        disabled={saving}
+                    >
+                        Hủy
+                    </button>
+                    <button
+                        type='submit'
+                        className={`${styles.btn} ${styles.btnPrimary}`}
+                        disabled={saving}
+                    >
+                        {saving ? 'Đang lưu...' : 'Lưu'}
                     </button>
                 </div>
-                <form className='modal-body' onSubmit={handleSubmit}>
-                    <label>
-                        Họ và tên
-                        <input
-                            name='hoVaTen'
-                            value={form.hoVaTen}
-                            onChange={handleChange}
-                            required
-                        />
-                    </label>
-                    <label>
-                        Email
-                        <input
-                            name='email'
-                            type='email'
-                            value={form.email}
-                            onChange={handleChange}
-                            required
-                        />
-                    </label>
-                    <label>
-                        Số điện thoại
-                        <input
-                            name='soDienThoai'
-                            value={form.soDienThoai}
-                            onChange={handleChange}
-                        />
-                    </label>
-                    <label>
-                        Mã nhân viên
-                        <input
-                            name='maNhanVien'
-                            value={form.maNhanVien}
-                            onChange={handleChange}
-                        />
-                    </label>
-                    <label>
-                        Đơn vị
-                        <input
-                            name='donVi'
-                            value={form.donVi}
-                            onChange={handleChange}
-                        />
-                    </label>
-                    <label>
-                        Chức vụ
-                        <input
-                            name='chucVu'
-                            value={form.chucVu}
-                            onChange={handleChange}
-                        />
-                    </label>
-                    <label>
-                        Trạng thái
-                        <select
-                            name='trangThai'
-                            value={form.trangThai}
-                            onChange={handleChange}
-                        >
-                            <option value='hoat_dong'>Hoạt động</option>
-                            <option value='tam_khoa'>Tạm khóa</option>
-                            <option value='nghi_viec'>Nghỉ việc</option>
-                        </select>
-                    </label>
-                    <div className='modal-actions'>
-                        <button
-                            type='submit'
-                            className='btn btn-primary'
-                            disabled={saving}
-                        >
-                            {saving ? 'Đang lưu...' : 'Lưu'}
-                        </button>
-                        <button
-                            type='button'
-                            className='btn'
-                            onClick={onClose}
-                            disabled={saving}
-                        >
-                            Hủy
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+            </form>
+        </Modal>
     );
 };
 

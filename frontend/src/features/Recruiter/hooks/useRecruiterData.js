@@ -1,192 +1,117 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import api from '@services/api';
+import { useToast } from '@hooks/useToast';
 
 export const useRecruiterData = () => {
-  const [loading, setLoading] = useState(false);
-  
-  const [jobs, setJobs] = useState([
-    {
-      id: 1,
-      title: 'Thực tập sinh Frontend Developer',
-      applicants: 24,
-      views: 234,
-      status: 'active',
-      statusText: 'Đang mở đơn'
-    },
-    {
-      id: 2,
-      title: 'Thực tập sinh Backend Developer',
-      applicants: 15,
-      views: 136,
-      status: 'pending',
-      statusText: 'Chờ duyệt'
-    },
-    {
-      id: 3,
-      title: 'Thực tập sinh Mobile Developer',
-      applicants: 12,
-      views: 461,
-      status: 'active',
-      statusText: 'Đang mở đơn'
-    }
-  ]);
+    const [loading, setLoading] = useState(false);
+    const [jobs, setJobs] = useState([]);
+    const [candidates, setCandidates] = useState([]);
+    const [interviews, setInterviews] = useState([]);
+    const [stats, setStats] = useState({});
+    const { toast } = useToast();
 
-  const [candidates, setCandidates] = useState([
-    {
-      id: 1,
-      name: 'Nguyễn Văn A',
-      position: 'Frontend Developer',
-      location: 'Đại học Bách khoa HN',
-      rating: '5.0',
-      appliedDate: '12/12/2024',
-      avatar: null,
-      status: 'new',
-      statusText: 'Mới',
-      skills: ['React', 'TypeScript', 'Tailwind']
-    },
-    {
-      id: 2,
-      name: 'Trần Thị B',
-      position: 'Backend Developer',
-      location: 'Đại học Công nghệ',
-      rating: '4.8',
-      appliedDate: '11/12/2024',
-      avatar: null,
-      status: 'interviewing',
-      statusText: 'Đang phỏng vấn',
-      skills: ['Node.js', 'MongoDB', 'Docker']
-    },
-    {
-      id: 3,
-      name: 'Lê Văn C',
-      position: 'Mobile Developer',
-      location: 'ĐH Kinh tế Quốc dân',
-      rating: '4.7',
-      appliedDate: '10/12/2024',
-      avatar: null,
-      status: 'new',
-      statusText: 'Mới',
-      skills: ['React Native', 'Flutter', 'Firebase']
-    },
-    {
-      id: 4,
-      name: 'Phạm Thị D',
-      position: 'UI/UX Designer',
-      location: 'ĐH Kinh tế Quốc dân',
-      rating: '5.0',
-      appliedDate: '08/01/2024',
-      avatar: null,
-      status: 'hired',
-      statusText: 'Đã tuyển',
-      skills: ['Figma', 'Adobe XD', 'Sketch']
-    }
-  ]);
+    const fetchJobs = useCallback(async () => {
+        setLoading(true);
+        try {
+            const res = await api.get('/jobs?limit=50&page=1');
+            const list =
+                res && (res.data || res.jobs || res)
+                    ? res.data || res.jobs || res
+                    : [];
+            setJobs(Array.isArray(list) ? list : []);
+        } catch (err) {
+            console.warn('fetchJobs failed, using empty list', err.message);
+            toast?.error('Không thể tải danh sách việc làm');
+            setJobs([]);
+        } finally {
+            setLoading(false);
+        }
+    }, [toast]);
 
-  const [interviews, setInterviews] = useState([
-    {
-      id: 1,
-      candidateName: 'Nguyễn Văn A',
-      position: 'Frontend Developer',
-      day: '15',
-      month: 'Thg 1',
-      time: '14:00 - 15:30',
-      location: 'Phòng họp A - Tầng 5',
-      interviewer: 'Trần Văn B'
-    },
-    {
-      id: 2,
-      candidateName: 'Lê Thị C',
-      position: 'Backend Developer',
-      day: '16',
-      month: 'Thg 1',
-      time: '09:00 - 10:30',
-      location: 'Zoom Meeting',
-      interviewer: 'Phạm Thị D'
-    },
-    {
-      id: 3,
-      candidateName: 'Hoàng Văn E',
-      position: 'Mobile Developer',
-      day: '18',
-      month: 'Thg 1',
-      time: '15:00 - 16:00',
-      location: 'Phòng họp B - Tầng 3',
-      interviewer: 'Nguyễn Văn F'
-    }
-  ]);
-
-  const stats = {
-    totalJobs: 8,
-    activeJobs: 24,
-    pendingApplications: 12,
-    interviews: 5
-  };
-
-  const fetchData = async () => {
-    setLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setLoading(false);
-  };
-
-  const addJob = (jobData) => {
-    const newJob = {
-      id: jobs.length + 1,
-      ...jobData,
-      status: 'pending',
-      statusText: 'Chờ duyệt',
-      applicants: 0,
-      views: 0
+    const addJob = async (jobData) => {
+        try {
+            const res = await api.post('/jobs', jobData);
+            const created = res && (res.data || res) ? res.data || res : null;
+            if (created) setJobs((prev) => [created, ...prev]);
+            return created;
+        } catch (err) {
+            toast?.error('Không thể tạo tin tuyển dụng');
+            throw err;
+        }
     };
-    setJobs([newJob, ...jobs]);
-  };
 
-  const updateJob = (id, updates) => {
-    setJobs(jobs.map(job => 
-      job.id === id ? { ...job, ...updates } : job
-    ));
-  };
+    const updateJob = async (id, updates) => {
+        try {
+            const res = await api.put(`/jobs/${id}`, updates);
+            const updated = res && (res.data || res) ? res.data || res : null;
+            if (updated)
+                setJobs((prev) =>
+                    prev.map((j) => (j._id === id || j.id === id ? updated : j))
+                );
+            return updated;
+        } catch (err) {
+            toast?.error('Không thể cập nhật tin tuyển dụng');
+            throw err;
+        }
+    };
 
-  const deleteJob = (id) => {
-    setJobs(jobs.filter(job => job.id !== id));
-  };
+    const deleteJob = async (id) => {
+        try {
+            await api.delete(`/jobs/${id}`);
+            setJobs((prev) =>
+                prev.filter((j) => !(j._id === id || j.id === id))
+            );
+            toast?.success('Xóa tin tuyển dụng thành công');
+        } catch (err) {
+            toast?.error('Không thể xóa tin tuyển dụng');
+            throw err;
+        }
+    };
 
-  const scheduleInterview = (candidateId, interviewData) => {
-    const candidate = candidates.find(c => c.id === candidateId);
-    if (candidate) {
-      const newInterview = {
-        id: interviews.length + 1,
-        candidateName: candidate.name,
-        position: candidate.position,
-        ...interviewData
-      };
-      setInterviews([...interviews, newInterview]);
-    }
-  };
+    const getApplicationsByJob = async (jobId, opts = {}) => {
+        try {
+            const res = await api.get(`/applications/job/${jobId}`, {
+                params: opts
+            });
+            const list = res && (res.data || res) ? res.data || res : [];
+            return Array.isArray(list) ? list : list.data || [];
+        } catch (err) {
+            console.error('getApplicationsByJob error', err.message);
+            toast?.error('Không thể tải ứng viên');
+            return [];
+        }
+    };
 
-  const rescheduleInterview = (id, newData) => {
-    setInterviews(interviews.map(interview => 
-      interview.id === id ? { ...interview, ...newData } : interview
-    ));
-  };
+    const fetchStats = async () => {
+        try {
+            const res = await api.get('/reports/dashboard');
+            const d = res && (res.data || res) ? res.data || res : {};
+            setStats(d);
+        } catch (err) {
+            console.warn('fetchStats fallback', err.message);
+            setStats({
+                totalJobs: 0,
+                activeJobs: 0,
+                pendingApplications: 0,
+                interviews: 0
+            });
+        }
+    };
 
-  const cancelInterview = (id) => {
-    setInterviews(interviews.filter(interview => interview.id !== id));
-  };
+    useEffect(() => {
+        fetchJobs();
+        fetchStats();
+    }, [fetchJobs]);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  return {
-    loading,
-    jobs,
-    candidates,
-    interviews,
-    stats,
-    addJob,
-    updateJob,
-    deleteJob,
-    scheduleInterview,
-    rescheduleInterview,
-    cancelInterview
-  };
+    return {
+        loading,
+        jobs,
+        candidates,
+        interviews,
+        stats,
+        addJob,
+        updateJob,
+        deleteJob,
+        getApplicationsByJob
+    };
 };

@@ -7,6 +7,7 @@ const morgan = require('morgan');
 const dotenv = require('dotenv');
 const connectDB = require('./config/database');
 const { errorHandler, notFound } = require('./middleware/errorHandler');
+const { activityLogger, logError } = require('./middleware/activityLogger');
 const activityRoutes = require('./routes/activities');
 const {
     protect,
@@ -55,6 +56,9 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(morgan('dev'));
+
+// Activity logger - record admin/user actions (only logs when req.user present)
+app.use(activityLogger());
 
 // ========================
 // ROUTES (ROUTER STYLE)

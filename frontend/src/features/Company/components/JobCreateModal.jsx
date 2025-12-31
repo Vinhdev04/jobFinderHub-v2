@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import api from '@services/api';
 import { useAuth } from '@hooks/useAuth';
 import { useToast } from '@hooks/useToast';
+import { handleApiError } from '@utils/apiErrorHandler';
+import authService from '@services/authService';
 
 const JobCreateModal = ({
     open,
@@ -11,7 +13,11 @@ const JobCreateModal = ({
     onUpdated
 }) => {
     const { user } = useAuth();
-    const toast = useToast();
+    const { toast } = useToast();
+    const currentUser = authService.getCurrentUser();
+    const isRecruiter =
+        currentUser?.vaiTro === 'nhan_vien_tuyen_dung' ||
+        currentUser?.vaiTro === 'quan_tri_he_thong';
     const [form, setForm] = useState({
         tieuDe: '',
         viTri: '',
@@ -66,22 +72,25 @@ const JobCreateModal = ({
                 congTy: user?.congTy?._id || user?.congTy
             };
 
+            if (!isRecruiter) {
+                return toast.error('Bạn không có quyền tạo/sửa tin tuyển dụng');
+            }
             if (initialData && (initialData._id || initialData.id)) {
                 // update
                 const id = initialData._id || initialData.id;
                 const res = await api.put(`/jobs/${id}`, payload);
-                toast.toast.success('Cập nhật tin tuyển dụng thành công');
+                toast.success('Cập nhật tin tuyển dụng thành công');
                 onUpdated && onUpdated(res && res.data ? res.data : res);
             } else {
                 // create
                 const res = await api.post('/jobs', payload);
-                toast.toast.success('Tạo tin tuyển dụng thành công');
+                toast.success('Tạo tin tuyển dụng thành công');
                 onCreated && onCreated(res && res.data ? res.data : res);
             }
             onClose && onClose();
         } catch (err) {
             console.error('Create/Update job error', err);
-            toast.toast.error(err.message || 'Lỗi khi lưu tin tuyển dụng');
+            handleApiError(toast, err, 'Lỗi khi lưu tin tuyển dụng');
         } finally {
             setSaving(false);
         }
