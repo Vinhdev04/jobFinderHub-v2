@@ -7,7 +7,7 @@ import { useCompanyData } from '@features/Company/hooks/useCompanyData';
 import confirmAction from '@utils/confirmAction';
 import './CompanyDashboard.css';
 import StatCard from '@features/Student/components/StatCard';
-import Modal from '../../components/common/Modal/Modal';
+import Modal from '@components/common/Modal/Modal';
 import { useToast } from '@hooks/useToast';
 import { handleApiError } from '@utils/apiErrorHandler';
 import RecruiterForm from '@features/Company/components/RecruiterForm';

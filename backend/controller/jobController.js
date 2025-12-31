@@ -20,9 +20,6 @@ exports.getAllJobs = async (req, res, next) => {
 
         const filter = {};
 
-        // Debug logging: show incoming params and types to diagnose 500 errors
-        console.log('🔍 Fetching jobs with params: ', { page, limit, trangThai, nganhNghe, loaiCongViec, search });
-
         if (trangThai) {
             filter.trangThai = trangThai;
         }
@@ -35,7 +32,6 @@ exports.getAllJobs = async (req, res, next) => {
             filter.loaiCongViec = loaiCongViec;
         }
 
-        // Tìm kiếm theo tiêu đề hoặc mô tả
         if (search) {
             filter.$or = [
                 { tieuDe: { $regex: search, $options: 'i' } },
@@ -43,20 +39,11 @@ exports.getAllJobs = async (req, res, next) => {
             ];
         }
 
-        console.log('🔎 Constructed filter:', filter);
-
-        // const jobs = await JobPosting.find(filter)
-        //     .populate('congTy', 'tenCongTy logo diaChi')
-        //     .populate('nguoiTao', 'hoTen email')
-        //     .limit(limit * 1)
-        //     .skip((page - 1) * limit)
-        //     .sort({ createdAt: -1 });
-const jobs = await JobPosting.find(filter)
-            // .populate('congTy', 'tenCongTy logo diaChi')  // Comment tạm
-            // .populate('nguoiTao', 'hoTen email')          // Comment tạm
+        const jobs = await JobPosting.find(filter)
             .limit(limit * 1)
             .skip((page - 1) * limit)
             .sort({ createdAt: -1 });
+            
         const total = await JobPosting.countDocuments(filter);
 
         return res.status(200).json({
@@ -84,11 +71,9 @@ exports.getJobById = async (req, res, next) => {
     try {
         const job = await JobPosting.findByIdAndUpdate(
             req.params.id,
-            { $inc: { soLuotXem: 1 } }, // Tăng lượt xem
+            { $inc: { soLuotXem: 1 } },
             { new: true }
-        )
-        .populate('congTy')
-        .populate('nguoiTao', 'hoTen email');
+        );
 
         if (!job) {
             return res.status(404).json({
@@ -97,7 +82,6 @@ exports.getJobById = async (req, res, next) => {
             });
         }
 
-        // Fetch extended job detail (if any) stored in separate collection
         let jobDetail = null;
         try {
             jobDetail = await JobDetail.findOne({ job: job._id });
@@ -105,15 +89,16 @@ exports.getJobById = async (req, res, next) => {
             console.error('❌ JobDetail lookup error:', err.message);
         }
 
-        // Merge detail into response object
         const jobObj = job.toObject ? job.toObject() : job;
         jobObj.chiTiet = jobDetail || null;
 
-        // Also include a quick check whether current user already applied (if authenticated)
         if (req.user && req.user.id) {
             try {
                 const Application = require('../models/Application');
-                const existingApp = await Application.findOne({ tinTuyenDung: job._id, ungVien: req.user.id });
+                const existingApp = await Application.findOne({ 
+                    tinTuyenDung: job._id, 
+                    ungVien: req.user.id 
+                });
                 jobObj._alreadyApplied = !!existingApp;
             } catch (err) {
                 console.error('❌ Check existing application error:', err.message);
@@ -137,9 +122,8 @@ exports.createJob = async (req, res, next) => {
     try {
         const {
             tieuDe,
-            viTri,
-            congTy,
-            moTaCongViec,
+            moTa,              // From frontend
+            moTaCongViec,      // Alternative
             yeuCau,
             quyenLoi,
             kyNangYeuCau,
@@ -147,47 +131,97 @@ exports.createJob = async (req, res, next) => {
             mucLuong,
             diaDiem,
             soLuongTuyen,
-            hanNopHoSo,
-            nganhNghe
+            hanNop,            // From frontend
+            hanNopHoSo,        // Alternative
+            linhVuc,           // From frontend
+            nganhNghe,         // Alternative
+            trangThai,
+            viTri,
+            congTy
         } = req.body;
 
+        console.log('📝 Create job request body:', req.body);
+
+        // Map frontend fields to backend fields
+        const jobData = {
+            tieuDe: tieuDe || '',
+            viTri: viTri || tieuDe || 'Vị trí tuyển dụng',
+            moTaCongViec: moTa || moTaCongViec || '',
+            yeuCau: yeuCau || '',
+            quyenLoi: quyenLoi || '',
+            kyNangYeuCau: kyNangYeuCau || [],
+            loaiCongViec: loaiCongViec || 'toan_thoi_gian',
+            diaDiem: diaDiem || '',
+            soLuongTuyen: soLuongTuyen || 1,
+            hanNopHoSo: hanNop || hanNopHoSo || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            nganhNghe: linhVuc || nganhNghe || '',
+            nguoiTao: req.user.id,
+            trangThai: trangThai || 'cho_duyet'
+        };
+
+        // Handle mucLuong - can be string or object
+        if (mucLuong) {
+            if (typeof mucLuong === 'string') {
+                jobData.mucLuong = {
+                    min: 0,
+                    max: 0,
+                    donVi: 'VND',
+                    hienThi: true
+                };
+            } else if (typeof mucLuong === 'object') {
+                jobData.mucLuong = mucLuong;
+            }
+        }
+
+        // Get company from user if not provided
+        if (congTy) {
+            jobData.congTy = congTy;
+        } else if (req.user.company) {
+            jobData.congTy = req.user.company;
+        } else if (req.user.congTy) {
+            jobData.congTy = req.user.congTy;
+        } else {
+            // Try to find company where user is member
+            const Company = require('../models/Company');
+            const userCompany = await Company.findOne({ 
+                $or: [
+                    { nguoiDaiDien: req.user.id },
+                    { 'thanhVien': req.user.id }
+                ]
+            });
+            
+            if (userCompany) {
+                jobData.congTy = userCompany._id;
+            } else {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Không tìm thấy công ty của bạn. Vui lòng tạo công ty trước.'
+                });
+            }
+        }
+
         // Validate required fields
-        if (!tieuDe || !viTri || !congTy || !hanNopHoSo) {
+        if (!jobData.tieuDe || !jobData.congTy) {
             return res.status(400).json({
                 success: false,
-                message: 'Vui lòng điền đầy đủ thông tin bắt buộc'
+                message: 'Vui lòng điền đầy đủ thông tin bắt buộc (tiêu đề, công ty)'
             });
         }
 
-        const job = await JobPosting.create({
-            tieuDe,
-            viTri,
-            congTy,
-            moTaCongViec,
-            yeuCau,
-            quyenLoi,
-            kyNangYeuCau: kyNangYeuCau || [],
-            loaiCongViec,
-            mucLuong,
-            diaDiem,
-            soLuongTuyen: soLuongTuyen || 1,
-            hanNopHoSo,
-            nganhNghe,
-            nguoiTao: req.user.id,
-            trangThai: 'cho_duyet'
-        });
-
-        const populatedJob = await job.populate('congTy').populate('nguoiTao', 'hoTen email');
+        const job = await JobPosting.create(jobData);
 
         return res.status(201).json({
             success: true,
             message: 'Tạo bài đăng thành công',
-            data: populatedJob
+            data: job
         });
 
     } catch (error) {
         console.error('❌ CreateJob error:', error);
-        next(error);
+        return res.status(500).json({
+            success: false,
+            message: error.message || 'Lỗi khi tạo tin tuyển dụng'
+        });
     }
 };
 
@@ -201,6 +235,7 @@ exports.updateJob = async (req, res, next) => {
         const {
             tieuDe,
             viTri,
+            moTa,
             moTaCongViec,
             yeuCau,
             quyenLoi,
@@ -209,7 +244,9 @@ exports.updateJob = async (req, res, next) => {
             mucLuong,
             diaDiem,
             soLuongTuyen,
+            hanNop,
             hanNopHoSo,
+            linhVuc,
             nganhNghe,
             trangThai
         } = req.body;
@@ -223,8 +260,14 @@ exports.updateJob = async (req, res, next) => {
             });
         }
 
-        // Kiểm tra quyền
-        if (job.nguoiTao.toString() !== req.user.id && req.user.vaiTro !== 'admin') {
+        // Kiểm tra quyền - allow if user is creator OR admin OR has same company
+        const hasPermission = 
+            job.nguoiTao.toString() === req.user.id || 
+            req.user.vaiTro === 'quan_tri_he_thong' ||
+            req.user.vaiTro === 'admin' ||
+            (req.user.company && job.congTy.toString() === req.user.company.toString());
+
+        if (!hasPermission) {
             return res.status(403).json({
                 success: false,
                 message: 'Bạn không có quyền cập nhật bài đăng này'
@@ -234,35 +277,49 @@ exports.updateJob = async (req, res, next) => {
         // Cập nhật thông tin
         if (tieuDe) job.tieuDe = tieuDe;
         if (viTri) job.viTri = viTri;
-        if (moTaCongViec) job.moTaCongViec = moTaCongViec;
+        if (moTa || moTaCongViec) job.moTaCongViec = moTa || moTaCongViec;
         if (yeuCau) job.yeuCau = yeuCau;
         if (quyenLoi) job.quyenLoi = quyenLoi;
         if (kyNangYeuCau) job.kyNangYeuCau = kyNangYeuCau;
         if (loaiCongViec) job.loaiCongViec = loaiCongViec;
-        if (mucLuong) job.mucLuong = mucLuong;
         if (diaDiem) job.diaDiem = diaDiem;
         if (soLuongTuyen) job.soLuongTuyen = soLuongTuyen;
-        if (hanNopHoSo) job.hanNopHoSo = hanNopHoSo;
-        if (nganhNghe) job.nganhNghe = nganhNghe;
+        if (hanNop || hanNopHoSo) job.hanNopHoSo = hanNop || hanNopHoSo;
+        if (linhVuc || nganhNghe) job.nganhNghe = linhVuc || nganhNghe;
+
+        // Handle mucLuong
+        if (mucLuong) {
+            if (typeof mucLuong === 'string') {
+                job.mucLuong = {
+                    min: 0,
+                    max: 0,
+                    donVi: 'VND',
+                    hienThi: true
+                };
+            } else {
+                job.mucLuong = mucLuong;
+            }
+        }
 
         // Chỉ admin mới có thể thay đổi trạng thái
-        if (trangThai && req.user.vaiTro === 'admin') {
+        if (trangThai && (req.user.vaiTro === 'quan_tri_he_thong' || req.user.vaiTro === 'admin')) {
             job.trangThai = trangThai;
         }
 
         await job.save();
 
-        const updatedJob = await job.populate('congTy').populate('nguoiTao', 'hoTen email');
-
         return res.status(200).json({
             success: true,
             message: 'Cập nhật bài đăng thành công',
-            data: updatedJob
+            data: job
         });
 
     } catch (error) {
         console.error('❌ UpdateJob error:', error);
-        next(error);
+        return res.status(500).json({
+            success: false,
+            message: error.message || 'Lỗi khi cập nhật tin tuyển dụng'
+        });
     }
 };
 
@@ -283,7 +340,12 @@ exports.deleteJob = async (req, res, next) => {
         }
 
         // Kiểm tra quyền
-        if (job.nguoiTao.toString() !== req.user.id && req.user.vaiTro !== 'admin') {
+        const hasPermission = 
+            job.nguoiTao.toString() === req.user.id || 
+            req.user.vaiTro === 'quan_tri_he_thong' ||
+            req.user.vaiTro === 'admin';
+
+        if (!hasPermission) {
             return res.status(403).json({
                 success: false,
                 message: 'Bạn không có quyền xóa bài đăng này'
@@ -313,8 +375,6 @@ exports.getJobsByCompany = async (req, res, next) => {
         const { page = 1, limit = 10 } = req.query;
 
         const jobs = await JobPosting.find({ congTy: req.params.companyId })
-            .populate('congTy', 'tenCongTy logo')
-            .populate('nguoiTao', 'hoTen email')
             .limit(limit * 1)
             .skip((page - 1) * limit)
             .sort({ createdAt: -1 });
@@ -377,15 +437,24 @@ exports.upsertJobDetail = async (req, res, next) => {
     try {
         const jobId = req.params.id;
 
-        // Ensure job exists
         const job = await JobPosting.findById(jobId);
         if (!job) {
-            return res.status(404).json({ success: false, message: 'Không tìm thấy bài đăng' });
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Không tìm thấy bài đăng' 
+            });
         }
 
-        // Authorization: only the recruiter who created the job or admin can update
-        if (req.user && req.user.vaiTro !== 'quan_tri_he_thong' && job.nguoiTao.toString() !== req.user._id.toString()) {
-            return res.status(403).json({ success: false, message: 'Bạn không có quyền cập nhật chi tiết này' });
+        const hasPermission = 
+            req.user.vaiTro === 'quan_tri_he_thong' || 
+            req.user.vaiTro === 'admin' ||
+            job.nguoiTao.toString() === req.user.id;
+
+        if (!hasPermission) {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Bạn không có quyền cập nhật chi tiết này' 
+            });
         }
 
         const {

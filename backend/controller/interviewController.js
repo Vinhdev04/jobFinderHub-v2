@@ -9,11 +9,19 @@ const Application = require('../models/Application');
  */
 exports.getAllInterviews = async (req, res, next) => {
     try {
-        const { page = 1, limit = 10, trangThai } = req.query;
+        const { page = 1, limit = 10, trangThai, sort = 'thoiGian' } = req.query;
 
         const filter = {};
         if (trangThai) {
             filter.trangThai = trangThai;
+        }
+
+        // Build sort object
+        let sortObj = {};
+        if (sort === 'thoiGian' || sort === '-thoiGian') {
+            sortObj.thoiGianPhongVan = sort === '-thoiGian' ? -1 : 1;
+        } else {
+            sortObj.thoiGianPhongVan = 1;
         }
 
         const interviews = await Interview.find(filter)
@@ -23,7 +31,7 @@ exports.getAllInterviews = async (req, res, next) => {
             .populate('nguoiPhongVan', 'hoTen email')
             .limit(limit * 1)
             .skip((page - 1) * limit)
-            .sort({ thoiGianPhongVan: -1 });
+            .sort(sortObj);
 
         const total = await Interview.countDocuments(filter);
 
@@ -83,56 +91,89 @@ exports.createInterview = async (req, res, next) => {
     try {
         const {
             donUngTuyen,
-            thoiGianPhongVan,
-            hinhThuc,
+            ungVien,
+            tinTuyenDung,
+            thoiGian,            // Frontend field
+            thoiGianPhongVan,    // Alternative
             diaDiem,
+            hinhThuc,
             nguoiPhongVan,
             ghiChu
         } = req.body;
 
+        console.log('📝 Create interview request body:', req.body);
+
+        // Map frontend fields to backend
+        const interviewTime = thoiGian || thoiGianPhongVan;
+
         // Validate required fields
-        if (!donUngTuyen || !thoiGianPhongVan || !hinhThuc || !diaDiem) {
+        if (!interviewTime || !diaDiem) {
             return res.status(400).json({
                 success: false,
-                message: 'Vui lòng điền đầy đủ thông tin bắt buộc'
+                message: 'Vui lòng điền đầy đủ thông tin bắt buộc (thời gian, địa điểm)'
             });
         }
 
-        // Kiểm tra đơn ứng tuyển tồn tại
-        const application = await Application.findById(donUngTuyen)
-            .populate('tinTuyenDung')
-            .populate('ungVien');
+        let application = null;
+        let candidateId = ungVien;
+        let jobId = tinTuyenDung;
 
-        if (!application) {
-            return res.status(404).json({
+        // If donUngTuyen is provided, get candidate and job from it
+        if (donUngTuyen) {
+            application = await Application.findById(donUngTuyen)
+                .populate('tinTuyenDung')
+                .populate('ungVien');
+
+            if (!application) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Không tìm thấy đơn ứng tuyển'
+                });
+            }
+
+            candidateId = application.ungVien._id;
+            jobId = application.tinTuyenDung._id;
+        }
+
+        // Validate we have candidate and job
+        if (!candidateId || !jobId) {
+            return res.status(400).json({
                 success: false,
-                message: 'Không tìm thấy đơn ứng tuyển'
+                message: 'Thiếu thông tin ứng viên hoặc tin tuyển dụng'
             });
         }
 
-        // Tạo phỏng vấn
-        const interview = await Interview.create({
-            donUngTuyen,
-            ungVien: application.ungVien._id,
-            tinTuyenDung: application.tinTuyenDung._id,
-            thoiGianPhongVan,
-            hinhThuc,
-            diaDiem,
-            nguoiPhongVan: nguoiPhongVan || [req.user.id],
-            ghiChu,
+        // Create interview
+        const interviewData = {
+            ungVien: candidateId,
+            tinTuyenDung: jobId,
+            thoiGianPhongVan: new Date(interviewTime),
+            diaDiem: diaDiem,
+            hinhThuc: hinhThuc || 'truc_tuyen',
+            nguoiPhongVan: nguoiPhongVan ? (Array.isArray(nguoiPhongVan) ? nguoiPhongVan : [nguoiPhongVan]) : [req.user.id],
+            ghiChu: ghiChu || '',
             trangThai: 'da_hen'
-        });
+        };
 
-        // Cập nhật trạng thái đơn ứng tuyển
-        application.trangThai = 'duoc_moi_phong_van';
-        application.lichSuTrangThai.push({
-            trangThai: 'duoc_moi_phong_van',
-            nguoiThayDoi: req.user.id,
-            ghiChu: 'Được mời phỏng vấn'
-        });
-        await application.save();
+        // Add donUngTuyen if available
+        if (donUngTuyen) {
+            interviewData.donUngTuyen = donUngTuyen;
+        }
 
-        const populatedInterview = await interview
+        const interview = await Interview.create(interviewData);
+
+        // Update application status if exists
+        if (application) {
+            application.trangThai = 'duoc_moi_phong_van';
+            application.lichSuTrangThai.push({
+                trangThai: 'duoc_moi_phong_van',
+                nguoiThayDoi: req.user.id,
+                ghiChu: 'Được mời phỏng vấn'
+            });
+            await application.save();
+        }
+
+        const populatedInterview = await Interview.findById(interview._id)
             .populate('donUngTuyen')
             .populate('ungVien')
             .populate('tinTuyenDung')
@@ -146,7 +187,10 @@ exports.createInterview = async (req, res, next) => {
 
     } catch (error) {
         console.error('❌ CreateInterview error:', error);
-        next(error);
+        return res.status(500).json({
+            success: false,
+            message: error.message || 'Lỗi khi tạo lịch phỏng vấn'
+        });
     }
 };
 
@@ -158,12 +202,15 @@ exports.createInterview = async (req, res, next) => {
 exports.updateInterview = async (req, res, next) => {
     try {
         const {
+            thoiGian,
             thoiGianPhongVan,
             diaDiem,
             nguoiPhongVan,
             ghiChu,
             trangThai
         } = req.body;
+
+        console.log('📝 Update interview request body:', req.body);
 
         let interview = await Interview.findById(req.params.id);
 
@@ -174,16 +221,20 @@ exports.updateInterview = async (req, res, next) => {
             });
         }
 
-        // Cập nhật thông tin
-        if (thoiGianPhongVan) interview.thoiGianPhongVan = thoiGianPhongVan;
+        // Update fields
+        if (thoiGian || thoiGianPhongVan) {
+            interview.thoiGianPhongVan = new Date(thoiGian || thoiGianPhongVan);
+        }
         if (diaDiem) interview.diaDiem = diaDiem;
-        if (nguoiPhongVan) interview.nguoiPhongVan = nguoiPhongVan;
-        if (ghiChu) interview.ghiChu = ghiChu;
+        if (nguoiPhongVan) {
+            interview.nguoiPhongVan = Array.isArray(nguoiPhongVan) ? nguoiPhongVan : [nguoiPhongVan];
+        }
+        if (ghiChu !== undefined) interview.ghiChu = ghiChu;
         if (trangThai) interview.trangThai = trangThai;
 
         await interview.save();
 
-        const updatedInterview = await interview
+        const updatedInterview = await Interview.findById(interview._id)
             .populate('donUngTuyen')
             .populate('ungVien')
             .populate('tinTuyenDung')
@@ -197,7 +248,10 @@ exports.updateInterview = async (req, res, next) => {
 
     } catch (error) {
         console.error('❌ UpdateInterview error:', error);
-        next(error);
+        return res.status(500).json({
+            success: false,
+            message: error.message || 'Lỗi khi cập nhật phỏng vấn'
+        });
     }
 };
 
@@ -294,29 +348,30 @@ exports.completeInterview = async (req, res, next) => {
 
         interview.trangThai = 'hoan_thanh';
 
-        // Cập nhật trạng thái đơn ứng tuyển dựa vào quyết định
-        const application = await Application.findById(interview.donUngTuyen);
-        if (application) {
-            if (quyetDinh === 'tuyen') {
-                application.trangThai = 'da_nhan';
-            } else if (quyetDinh === 'khong_tuyen') {
-                application.trangThai = 'tu_choi';
+        // Cập nhật trạng thái đơn ứng tuyển
+        if (interview.donUngTuyen) {
+            const application = await Application.findById(interview.donUngTuyen);
+            if (application) {
+                if (quyetDinh === 'tuyen') {
+                    application.trangThai = 'da_nhan';
+                } else if (quyetDinh === 'khong_tuyen') {
+                    application.trangThai = 'tu_choi';
+                }
+
+                application.danhGia = {
+                    diem,
+                    nhanXet,
+                    nguoiDanhGia: req.user.id,
+                    ngayDanhGia: new Date()
+                };
+
+                await application.save();
             }
-            // Nếu cần phỏng vấn lại, giữ trạng thái hiện tại
-
-            application.danhGia = {
-                diem,
-                nhanXet,
-                nguoiDanhGia: req.user.id,
-                ngayDanhGia: new Date()
-            };
-
-            await application.save();
         }
 
         await interview.save();
 
-        const updatedInterview = await interview
+        const updatedInterview = await Interview.findById(interview._id)
             .populate('donUngTuyen')
             .populate('ungVien')
             .populate('tinTuyenDung')

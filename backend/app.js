@@ -15,33 +15,16 @@ const {
     isRecruiter,
     isCandidate
 } = require('./middleware/auth');
-const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Configure multer for CV uploads
+// Configure uploads directory
 const uploadsDir = path.join(__dirname, 'public', 'uploads', 'cvs');
-// Ensure uploads directory exists
 try {
     fs.mkdirSync(uploadsDir, { recursive: true });
 } catch (err) {
-    console.warn(
-        'Could not create uploads directory:',
-        uploadsDir,
-        err.message
-    );
+    console.warn('Could not create uploads directory:', uploadsDir, err.message);
 }
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, uploadsDir);
-    },
-    filename: function (req, file, cb) {
-        const ext = path.extname(file.originalname);
-        const name = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
-        cb(null, name);
-    }
-});
-const upload = multer({ storage });
 
 // Connect DB
 connectDB();
@@ -61,156 +44,44 @@ app.use(morgan('dev'));
 app.use(activityLogger());
 
 // ========================
-// ROUTES (ROUTER STYLE)
+// STATIC FILES
 // ========================
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/users', require('./routes/users'));
-app.use('/api/applications', require('./routes/applications'));
-
 // Serve uploaded files (avatars, cvs)
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 // Serve backups
 app.use('/backups', express.static(path.join(__dirname, 'public', 'backups')));
 
 // ========================
-// CONTROLLERS - ✅ FIXED: controllers/ thay vì controller/
+// API ROUTES
 // ========================
-const companyController = require('./controller/companyController');
-const jobController = require('./controller/jobController');
-const applicationController = require('./controller/applicationController');
-const interviewController = require('./controller/interviewController');
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/users', require('./routes/users'));
+app.use('/api/companies', require('./routes/companies'));
+app.use('/api/applications', require('./routes/applications'));
+app.use('/api/jobs', require('./routes/jobs'));
+app.use('/api/interviews', require('./routes/interviews'));
+app.use('/api/activities', require('./routes/activities'));
+app.use('/api/admin', require('./routes/admin'));
+app.use('/api/teachers', require('./routes/teachers'));
+app.use('/api/managers', require('./routes/managers'));
+
+// ========================
+// NOTIFICATION & REPORT ROUTES (Still inline - can be moved to routes files later)
+// ========================
 const notificationController = require('./controller/notificationController');
 const reportController = require('./controller/reportController');
 
-app.use('/api/activities', activityRoutes);
-// ========================
-// COMPANY ROUTES (router)
-// ========================
-app.use('/api/companies', require('./routes/companies'));
-
-// ========================
-// JOB ROUTES
-// ========================
-// Public routes - không cần authentication
-app.get('/api/jobs', jobController.getAllJobs);
-app.get('/api/jobs/company/:companyId', jobController.getJobsByCompany);
-app.get('/api/jobs/:id', jobController.getJobById);
-
-// Job details (create/update) - protected: recruiter or admin
-app.post('/api/jobs/:id/detail', protect, jobController.upsertJobDetail);
-
-// Protected routes - cần authentication
-app.post('/api/jobs', protect, isRecruiter, jobController.createJob);
-app.put('/api/jobs/:id', protect, jobController.updateJob);
-app.delete('/api/jobs/:id', protect, jobController.deleteJob);
-app.put('/api/jobs/:id/approve', protect, isAdmin, jobController.approveJob);
-
-// ========================
-// APPLICATION ROUTES
-// ========================
-app.get('/api/applications', applicationController.getAllApplications);
-app.get('/api/applications/:id', applicationController.getApplicationById);
-app.post(
-    '/api/applications',
-    protect,
-    isCandidate,
-    upload.single('cv'),
-    applicationController.createApplication
-);
-app.put(
-    '/api/applications/:id/status',
-    protect,
-    applicationController.updateApplicationStatus
-);
-app.delete(
-    '/api/applications/:id',
-    protect,
-    applicationController.withdrawApplication
-);
-app.get(
-    '/api/applications/candidate/:studentId',
-    protect,
-    applicationController.getApplicationsByStudent
-);
-app.get(
-    '/api/applications/job/:jobId',
-    protect,
-    applicationController.getApplicationsByJob
-);
-
-// ========================
-// INTERVIEW ROUTES
-// ========================
-app.get('/api/interviews', interviewController.getAllInterviews);
-app.get('/api/interviews/:id', interviewController.getInterviewById);
-app.post(
-    '/api/interviews',
-    protect,
-    isRecruiter,
-    interviewController.createInterview
-);
-app.put('/api/interviews/:id', protect, interviewController.updateInterview);
-app.delete('/api/interviews/:id', protect, interviewController.cancelInterview);
-app.get(
-    '/api/interviews/candidate/:studentId',
-    protect,
-    interviewController.getInterviewsByStudent
-);
-app.put(
-    '/api/interviews/:id/complete',
-    protect,
-    isRecruiter,
-    interviewController.completeInterview
-);
-
-// ========================
-// NOTIFICATION ROUTES
-// ========================
 app.get('/api/notifications', protect, notificationController.getNotifications);
-app.put(
-    '/api/notifications/:id/read',
-    protect,
-    notificationController.markAsRead
-);
-app.put(
-    '/api/notifications/mark-all-read',
-    protect,
-    notificationController.markAllAsRead
-);
-app.delete(
-    '/api/notifications/:id',
-    protect,
-    notificationController.deleteNotification
-);
-app.post(
-    '/api/notifications',
-    protect,
-    isAdmin,
-    notificationController.createNotification
-);
-app.delete(
-    '/api/notifications/delete-read',
-    protect,
-    notificationController.deleteAllReadNotifications
-);
+app.put('/api/notifications/:id/read', protect, notificationController.markAsRead);
+app.put('/api/notifications/mark-all-read', protect, notificationController.markAllAsRead);
+app.delete('/api/notifications/:id', protect, notificationController.deleteNotification);
+app.post('/api/notifications', protect, isAdmin, notificationController.createNotification);
+app.delete('/api/notifications/delete-read', protect, notificationController.deleteAllReadNotifications);
 
-// ========================
-// REPORT ROUTES
-// ========================
-app.get(
-    '/api/reports/dashboard',
-    protect,
-    isAdmin,
-    reportController.getDashboardStats
-);
+app.get('/api/reports/dashboard', protect, isAdmin, reportController.getDashboardStats);
 app.get('/api/reports', protect, isAdmin, reportController.getReports);
 app.get('/api/reports/:id', protect, isAdmin, reportController.getReportById);
-app.post(
-    '/api/reports/generate',
-    protect,
-    isAdmin,
-    reportController.generateReport
-);
+app.post('/api/reports/generate', protect, isAdmin, reportController.generateReport);
 
 // ========================
 // HEALTH CHECK
@@ -223,17 +94,6 @@ app.get('/health', (req, res) => {
         env: process.env.NODE_ENV || 'development'
     });
 });
-
-// Admin router
-app.use('/api/admin', require('./routes/admin'));
-
-// Activities router
-app.use('/api/activities', require('./routes/activities'));
-
-// Teachers router
-app.use('/api/teachers', require('./routes/teachers'));
-// Managers router
-app.use('/api/managers', require('./routes/managers'));
 
 // ========================
 // ERROR HANDLING
