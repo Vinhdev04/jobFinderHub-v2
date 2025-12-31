@@ -1,5 +1,6 @@
 // backend/controllers/companyController.js
 const Company = require('../models/Company');
+const Activity = require('../models/Activity');
 
 /**
  * @desc    Lấy tất cả công ty
@@ -9,14 +10,14 @@ const Company = require('../models/Company');
 exports.getAllCompanies = async (req, res, next) => {
     try {
         const { page = 1, limit = 10, trangThai } = req.query;
-        
+
         const filter = {};
         if (trangThai) {
             filter.trangThai = trangThai;
         }
 
         const companies = await Company.find(filter)
-            .populate('nguoiDaiDien', 'hoTen email')
+            .populate('nguoiDaiDien', 'hoVaTen email')
             .limit(limit * 1)
             .skip((page - 1) * limit)
             .sort({ createdAt: -1 });
@@ -32,7 +33,6 @@ exports.getAllCompanies = async (req, res, next) => {
                 pages: Math.ceil(total / limit)
             }
         });
-
     } catch (error) {
         console.error('❌ GetAllCompanies error:', error);
         next(error);
@@ -46,8 +46,10 @@ exports.getAllCompanies = async (req, res, next) => {
  */
 exports.getCompanyById = async (req, res, next) => {
     try {
-        const company = await Company.findById(req.params.id)
-            .populate('nguoiDaiDien', 'hoTen email soDienThoai');
+        const company = await Company.findById(req.params.id).populate(
+            'nguoiDaiDien',
+            'hoVaTen email soDienThoai'
+        );
 
         if (!company) {
             return res.status(404).json({
@@ -60,7 +62,6 @@ exports.getCompanyById = async (req, res, next) => {
             success: true,
             data: company
         });
-
     } catch (error) {
         console.error('❌ GetCompanyById error:', error);
         next(error);
@@ -107,12 +108,25 @@ exports.createCompany = async (req, res, next) => {
             nguoiDaiDien: [req.user.id] // Người tạo là đại diện
         });
 
+        // Log activity
+        try {
+            await Activity.create({
+                action: 'Tạo công ty',
+                user: req.user && req.user._id ? req.user._id : null,
+                userEmail: req.user && req.user.email ? req.user.email : null,
+                ip: req.ip,
+                status: 'success',
+                meta: { companyId: company._id, companyName: company.tenCongTy }
+            });
+        } catch (logErr) {
+            console.error('❌ Activity log error:', logErr.message);
+        }
+
         return res.status(201).json({
             success: true,
             message: 'Tạo công ty thành công',
             data: company
         });
-
     } catch (error) {
         console.error('❌ CreateCompany error:', error);
         next(error);
@@ -165,16 +179,30 @@ exports.updateCompany = async (req, res, next) => {
         if (quyMo) company.quyMo = quyMo;
         if (email) company.email = email;
         if (soDienThoai) company.soDienThoai = soDienThoai;
-        if (trangThai && req.user.vaiTro === 'admin') company.trangThai = trangThai;
+        if (trangThai && req.user.vaiTro === 'admin')
+            company.trangThai = trangThai;
 
         await company.save();
+
+        // Log activity
+        try {
+            await Activity.create({
+                action: 'Cập nhật công ty',
+                user: req.user && req.user._id ? req.user._id : null,
+                userEmail: req.user && req.user.email ? req.user.email : null,
+                ip: req.ip,
+                status: 'success',
+                meta: { companyId: company._id }
+            });
+        } catch (logErr) {
+            console.error('❌ Activity log error:', logErr.message);
+        }
 
         return res.status(200).json({
             success: true,
             message: 'Cập nhật công ty thành công',
             data: company
         });
-
     } catch (error) {
         console.error('❌ UpdateCompany error:', error);
         next(error);
@@ -197,11 +225,24 @@ exports.deleteCompany = async (req, res, next) => {
             });
         }
 
+        // Log activity
+        try {
+            await Activity.create({
+                action: 'Xóa công ty',
+                user: req.user && req.user._id ? req.user._id : null,
+                userEmail: req.user && req.user.email ? req.user.email : null,
+                ip: req.ip,
+                status: 'success',
+                meta: { companyId: company._id, companyName: company.tenCongTy }
+            });
+        } catch (logErr) {
+            console.error('❌ Activity log error:', logErr.message);
+        }
+
         return res.status(200).json({
             success: true,
             message: 'Xóa công ty thành công'
         });
-
     } catch (error) {
         console.error('❌ DeleteCompany error:', error);
         next(error);
@@ -227,12 +268,25 @@ exports.verifyCompany = async (req, res, next) => {
         company.daXacMinh = true;
         await company.save();
 
+        // Log activity
+        try {
+            await Activity.create({
+                action: 'Xác minh công ty',
+                user: req.user && req.user._id ? req.user._id : null,
+                userEmail: req.user && req.user.email ? req.user.email : null,
+                ip: req.ip,
+                status: 'success',
+                meta: { companyId: company._id }
+            });
+        } catch (logErr) {
+            console.error('❌ Activity log error:', logErr.message);
+        }
+
         return res.status(200).json({
             success: true,
             message: 'Xác minh công ty thành công',
             data: company
         });
-
     } catch (error) {
         console.error('❌ VerifyCompany error:', error);
         next(error);

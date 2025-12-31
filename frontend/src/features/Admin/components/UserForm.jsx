@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Modal from '@components/common/Modal/Modal';
 import userService from '@services/userService';
 import { useToast } from '@hooks/useToast';
+import styles from './UserForm.module.css';
 
 const defaultForm = {
     hoVaTen: '',
@@ -49,7 +50,10 @@ const UserForm = ({ isOpen, onClose, onSaved, initialData = null }) => {
                 if (!payload.matKhau) delete payload.matKhau;
                 // Remove sendWelcome when editing
                 delete payload.sendWelcome;
-                const res = await userService.updateUser(initialData._id, payload);
+                const res = await userService.updateUser(
+                    initialData._id,
+                    payload
+                );
                 toast.success(res.message || 'Cập nhật thành công');
             } else {
                 // Create
@@ -69,67 +73,123 @@ const UserForm = ({ isOpen, onClose, onSaved, initialData = null }) => {
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={initialData ? 'Chỉnh sửa người dùng' : 'Thêm người dùng'}>
-            <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '0.75rem' }}>
-                <label>
-                    Họ và tên
-                    <input name='hoVaTen' value={form.hoVaTen} onChange={handleChange} required />
-                </label>
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title={initialData ? 'Chỉnh sửa người dùng' : 'Thêm người dùng'}
+        >
+            <form onSubmit={handleSubmit} className={styles.formContainer}>
+                <div className={styles.formGroup}>
+                    <label>Họ và tên</label>
+                    <input
+                        name='hoVaTen'
+                        value={form.hoVaTen}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
 
-                <label>
-                    Email
-                    <input name='email' value={form.email} onChange={handleChange} required type='email' />
-                </label>
+                <div className={styles.formGroup}>
+                    <label>Email</label>
+                    <input
+                        name='email'
+                        value={form.email}
+                        onChange={handleChange}
+                        required
+                        type='email'
+                    />
+                </div>
 
-                <label>
-                    Số điện thoại
-                    <input name='soDienThoai' value={form.soDienThoai} onChange={handleChange} />
-                </label>
+                <div className={styles.formGroup}>
+                    <label>Số điện thoại</label>
+                    <input
+                        name='soDienThoai'
+                        value={form.soDienThoai}
+                        onChange={handleChange}
+                    />
+                </div>
 
-                <label>
-                    Vai trò
-                    <select name='vaiTro' value={form.vaiTro} onChange={handleChange}>
+                <div className={styles.formGroup}>
+                    <label>Vai trò</label>
+                    <select
+                        name='vaiTro'
+                        value={form.vaiTro}
+                        onChange={handleChange}
+                    >
                         <option value='sinh_vien'>Sinh viên</option>
                         <option value='giao_vu'>Giáo vụ</option>
-                        <option value='nhan_vien_tuyen_dung'>NV Tuyển dụng</option>
+                        <option value='nhan_vien_tuyen_dung'>
+                            NV Tuyển dụng
+                        </option>
                         <option value='quan_ly_doanh_nghiep'>Quản lý DN</option>
                         <option value='quan_tri_he_thong'>Quản trị viên</option>
                     </select>
-                </label>
+                </div>
 
-                <label>
-                    Trạng thái
-                    <select name='trangThai' value={form.trangThai} onChange={handleChange}>
+                <div className={styles.formGroup}>
+                    <label>Trạng thái</label>
+                    <select
+                        name='trangThai'
+                        value={form.trangThai}
+                        onChange={handleChange}
+                    >
                         <option value='hoat_dong'>Hoạt động</option>
                         <option value='tam_khoa'>Tạm khóa</option>
                         <option value='khoa'>Khóa</option>
                     </select>
-                </label>
+                </div>
 
                 {!initialData && (
                     <>
-                        <label>
-                            Mật khẩu (tạm thời)
-                            <input name='matKhau' value={form.matKhau} onChange={handleChange} type='password' />
-                        </label>
+                        <div className={styles.formGroup}>
+                            <label>Mật khẩu (tạm thời)</label>
+                            <input
+                                name='matKhau'
+                                value={form.matKhau}
+                                onChange={handleChange}
+                                type='password'
+                            />
+                            <span className={styles.helperText}>
+                                Để trống để hệ thống tự tạo mật khẩu ngẫu nhiên
+                            </span>
+                        </div>
 
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <div className={styles.checkboxGroup}>
                             <input
                                 type='checkbox'
                                 name='sendWelcome'
+                                id='sendWelcome'
                                 checked={form.sendWelcome === true}
-                                onChange={(e) => setForm((s) => ({ ...s, sendWelcome: e.target.checked }))}
+                                onChange={(e) =>
+                                    setForm((s) => ({
+                                        ...s,
+                                        sendWelcome: e.target.checked
+                                    }))
+                                }
                             />
-                            <span>Gửi email chào mừng kèm mật khẩu tạm thời</span>
-                        </label>
+                            <label htmlFor='sendWelcome'>
+                                <span>
+                                    Gửi email chào mừng kèm mật khẩu tạm thời
+                                </span>
+                            </label>
+                        </div>
                     </>
                 )}
 
-                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
-                    <button type='button' className='btn btn-secondary' onClick={onClose} disabled={submitting}>
+                <div className={styles.formActions}>
+                    <button
+                        type='button'
+                        className={`${styles.btn} ${styles.btnSecondary}`}
+                        onClick={onClose}
+                        disabled={submitting}
+                    >
                         Hủy
                     </button>
-                    <button type='submit' className='btn btn-primary' disabled={submitting}>
+                    <button
+                        type='submit'
+                        className={`${styles.btn} ${styles.btnPrimary}`}
+                        disabled={submitting}
+                    >
                         {submitting ? 'Đang lưu...' : 'Lưu'}
                     </button>
                 </div>

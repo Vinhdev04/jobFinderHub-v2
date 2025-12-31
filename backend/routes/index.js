@@ -3,14 +3,15 @@ const express = require('express');
 const router = express.Router();
 
 // Import controllers
-const authController = require('../controllers/authController');
-const companyController = require('../controllers/companyController');
-const jobController = require('../controllers/jobController');
-const applicationController = require('../controllers/applicationController');
-const interviewController = require('../controllers/interviewController');
-const notificationController = require('../controllers/notificationController');
-const reportController = require('../controllers/reportController');
-const activityController = require('../controllers/activityController');
+const authController = require('../controller/authController');
+const companyController = require('../controller/companyController');
+const jobController = require('../controller/jobController');
+const applicationController = require('../controller/applicationController');
+const interviewController = require('../controller/interviewController');
+const notificationController = require('../controller/notificationController');
+const reportController = require('../controller/reportController');
+const activityController = require('../controller/activityController');
+const adminController = require('../controller/adminController');
 const { protect, authorize } = require('../middleware/auth');
 
 // Middleware (cần tạo sau)
@@ -54,10 +55,19 @@ router.put('/jobs/:id/approve', jobController.approveJob); // cần middleware r
 router.get('/applications', applicationController.getAllApplications);
 router.get('/applications/:id', applicationController.getApplicationById);
 router.post('/applications', applicationController.createApplication); // cần middleware protect
-router.put('/applications/:id/status', applicationController.updateApplicationStatus); // cần middleware protect
+router.put(
+    '/applications/:id/status',
+    applicationController.updateApplicationStatus
+); // cần middleware protect
 router.delete('/applications/:id', applicationController.withdrawApplication); // cần middleware protect
-router.get('/applications/candidate/:studentId', applicationController.getApplicationsByStudent);
-router.get('/applications/job/:jobId', applicationController.getApplicationsByJob);
+router.get(
+    '/applications/candidate/:studentId',
+    applicationController.getApplicationsByStudent
+);
+router.get(
+    '/applications/job/:jobId',
+    applicationController.getApplicationsByJob
+);
 
 // =====================
 // INTERVIEW ROUTES
@@ -67,7 +77,10 @@ router.get('/interviews/:id', interviewController.getInterviewById);
 router.post('/interviews', interviewController.createInterview); // cần middleware protect
 router.put('/interviews/:id', interviewController.updateInterview); // cần middleware protect
 router.delete('/interviews/:id', interviewController.cancelInterview); // cần middleware protect
-router.get('/interviews/candidate/:studentId', interviewController.getInterviewsByStudent);
+router.get(
+    '/interviews/candidate/:studentId',
+    interviewController.getInterviewsByStudent
+);
 router.put('/interviews/:id/complete', interviewController.completeInterview); // cần middleware protect
 
 // =====================
@@ -75,10 +88,16 @@ router.put('/interviews/:id/complete', interviewController.completeInterview); /
 // =====================
 router.get('/notifications', notificationController.getNotifications); // cần middleware protect
 router.put('/notifications/:id/read', notificationController.markAsRead); // cần middleware protect
-router.put('/notifications/mark-all-read', notificationController.markAllAsRead); // cần middleware protect
+router.put(
+    '/notifications/mark-all-read',
+    notificationController.markAllAsRead
+); // cần middleware protect
 router.delete('/notifications/:id', notificationController.deleteNotification); // cần middleware protect
 router.post('/notifications', notificationController.createNotification); // cần middleware protect + restrictTo('admin', 'system')
-router.delete('/notifications/delete-read', notificationController.deleteAllReadNotifications); // cần middleware protect
+router.delete(
+    '/notifications/delete-read',
+    notificationController.deleteAllReadNotifications
+); // cần middleware protect
 
 // =====================
 // REPORT ROUTES
@@ -91,13 +110,43 @@ router.post('/reports/generate', reportController.generateReport); // cần midd
 // =====================
 // ACTIVITY ROUTES
 // =====================
-router.get('/activities', protect, authorize('quan_tri_he_thong'), activityController.getActivities);
-router.get('/activities/export', protect, authorize('quan_tri_he_thong'), activityController.exportActivities);
+// ADMIN: settings & backup
+router.get(
+    '/admin/settings',
+    protect,
+    authorize('quan_tri_he_thong'),
+    adminController.getSettings
+);
+router.put(
+    '/admin/settings',
+    protect,
+    authorize('quan_tri_he_thong'),
+    adminController.updateSettings
+);
+router.get(
+    '/admin/backup',
+    protect,
+    authorize('quan_tri_he_thong'),
+    adminController.backupDatabase
+);
+
+router.get(
+    '/activities',
+    protect,
+    authorize('quan_tri_he_thong'),
+    activityController.getActivities
+);
+router.get(
+    '/activities/export',
+    protect,
+    authorize('quan_tri_he_thong'),
+    activityController.exportActivities
+);
 
 // Health check
 router.get('/health', (req, res) => {
-    res.json({ 
-        status: 'ok', 
+    res.json({
+        status: 'ok',
         message: 'API is running',
         timestamp: new Date()
     });

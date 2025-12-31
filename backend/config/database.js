@@ -4,8 +4,7 @@ const mongoose = require('mongoose');
 const connectDB = async () => {
     try {
         const mongoUri =
-            process.env.MONGODB_URI ||
-            'mongodb://localhost:27017/jobfinder_db';
+            process.env.MONGODB_URI || 'mongodb://localhost:27017/jobfinder_db';
 
         // ✅ CHỈ GIỮ OPTION HỢP LỆ
         const options = {
@@ -48,9 +47,10 @@ const connectDB = async () => {
         });
 
         return conn;
-
     } catch (error) {
-        console.error(`\n╔════════════════════════════════════════╗\n║     ❌ MongoDB Connection Failed       ║\n╠════════════════════════════════════════╣\n║ Error: ${error.message}\n║ MongoDB URI: ${process.env.MONGODB_URI}\n╚════════════════════════════════════════╝\n        `);
+        console.error(
+            `\n╔════════════════════════════════════════╗\n║     ❌ MongoDB Connection Failed       ║\n╠════════════════════════════════════════╣\n║ Error: ${error.message}\n║ MongoDB URI: ${process.env.MONGODB_URI}\n╚════════════════════════════════════════╝\n        `
+        );
         // Do not exit the process here so the server can start for local UI debugging.
         // Return null to indicate no active DB connection. DB-dependent routes should
         // handle missing connection gracefully in development.
