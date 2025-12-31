@@ -226,6 +226,11 @@ app.use('/api/admin', require('./routes/admin'));
 // Activities router
 app.use('/api/activities', require('./routes/activities'));
 
+// Teachers router
+app.use('/api/teachers', require('./routes/teachers'));
+// Managers router
+app.use('/api/managers', require('./routes/managers'));
+
 // ========================
 // ERROR HANDLING
 // ========================

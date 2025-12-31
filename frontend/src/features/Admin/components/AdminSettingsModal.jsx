@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '@services/api';
+import { useToast } from '@hooks/useToast';
 
 const AdminSettingsModal = ({ open, onClose }) => {
     const [settings, setSettings] = useState({});
@@ -23,21 +24,34 @@ const AdminSettingsModal = ({ open, onClose }) => {
 
     const handleChange = (k, v) => setSettings({ ...settings, [k]: v });
 
+    const toast = useToast();
+
+    const [addingKey, setAddingKey] = useState(false);
+    const [newKey, setNewKey] = useState('');
+
     const handleAddKey = () => {
-        const key = window.prompt('Key setting');
-        if (!key) return;
-        handleChange(key, '');
+        setAddingKey(true);
+        setNewKey('');
+    };
+
+    const handleConfirmAddKey = () => {
+        if (!newKey) return toast.toast.warning('Vui lòng nhập key');
+        handleChange(newKey, '');
+        setAddingKey(false);
+        setNewKey('');
     };
 
     const handleSave = async () => {
         setSaving(true);
         try {
             await api.put('/admin/settings', settings);
-            alert('Lưu cấu hình thành công');
+            toast.toast.success('Lưu cấu hình thành công');
             onClose && onClose();
         } catch (err) {
             console.error('Save settings error', err);
-            alert(err && err.message ? err.message : 'Lỗi khi lưu settings');
+            toast.toast.error(
+                err && err.message ? err.message : 'Lỗi khi lưu settings'
+            );
         } finally {
             setSaving(false);
         }
@@ -54,9 +68,34 @@ const AdminSettingsModal = ({ open, onClose }) => {
                 </div>
                 <div className='modal-body'>
                     <div style={{ marginBottom: 12 }}>
-                        <button onClick={handleAddKey} className='btn'>
-                            Thêm key
-                        </button>
+                        {!addingKey ? (
+                            <button onClick={handleAddKey} className='btn'>
+                                Thêm key
+                            </button>
+                        ) : (
+                            <div style={{ display: 'flex', gap: 8 }}>
+                                <input
+                                    placeholder='Key setting'
+                                    value={newKey}
+                                    onChange={(e) => setNewKey(e.target.value)}
+                                />
+                                <button
+                                    className='btn'
+                                    onClick={handleConfirmAddKey}
+                                >
+                                    Thêm
+                                </button>
+                                <button
+                                    className='btn'
+                                    onClick={() => {
+                                        setAddingKey(false);
+                                        setNewKey('');
+                                    }}
+                                >
+                                    Hủy
+                                </button>
+                            </div>
+                        )}
                     </div>
                     {Object.keys(settings).length === 0 && (
                         <div>Không có cấu hình nào</div>

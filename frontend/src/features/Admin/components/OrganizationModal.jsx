@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '@services/api';
 import styles from './OrganizationModal.module.css';
+import { useToast } from '@hooks/useToast';
 
 const OrganizationModal = ({
     open,
@@ -49,6 +50,8 @@ const OrganizationModal = ({
     const handleChange = (e) =>
         setForm({ ...form, [e.target.name]: e.target.value });
 
+    const toast = useToast();
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (mode === 'view') return onClose && onClose();
@@ -63,7 +66,9 @@ const OrganizationModal = ({
             onClose && onClose();
         } catch (err) {
             console.error('Organization save error', err);
-            alert(err && err.message ? err.message : 'Lỗi khi lưu tổ chức');
+            toast.toast.error(
+                err && err.message ? err.message : 'Lỗi khi lưu tổ chức'
+            );
         } finally {
             setSaving(false);
         }

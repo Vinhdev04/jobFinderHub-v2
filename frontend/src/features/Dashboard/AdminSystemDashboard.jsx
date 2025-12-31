@@ -15,6 +15,7 @@ import ActivityLogCard from '@features/Admin/components/ActivityLogCard';
 import QuickActionsCard from '@features/Admin/components/QuickActionsCard';
 import UsersTable from '@features/Admin/components/UsersTable';
 import OrganizationsGrid from '@features/Admin/components/OrganizationsGrid';
+import ManagersGrid from '@features/Admin/components/ManagersGrid';
 
 // Import Constants
 import {
@@ -140,6 +141,7 @@ const AdminSystemDashboard = () => {
 
                 {activeTab === 'users' && <UsersTable />}
                 {activeTab === 'organizations' && <OrganizationsGrid />}
+                {activeTab === 'managers' && <ManagersGrid />}
                 {activeTab === 'schools' && <OrganizationsGrid />}
 
                 {/* Add more tab content as needed */}

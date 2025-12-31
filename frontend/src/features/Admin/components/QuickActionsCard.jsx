@@ -5,6 +5,7 @@ import api from '@services/api';
 import AdminSettingsModal from './AdminSettingsModal';
 import UserForm from './UserForm';
 import '../styles/QuickActionsCard.css';
+import { useToast } from '@hooks/useToast';
 
 const QuickActionsCard = () => {
     const actions = [
@@ -31,6 +32,8 @@ const QuickActionsCard = () => {
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [userModalOpen, setUserModalOpen] = useState(false);
 
+    const toast = useToast();
+
     const handleBackup = async () => {
         try {
             const res = await api.get('/admin/backup');
@@ -45,11 +48,13 @@ const QuickActionsCard = () => {
                 ).replace(/\/+$/, '');
                 window.open(base + res.data.downloadUrl, '_blank');
             } else {
-                alert('Không thể tạo backup');
+                toast.toast.error('Không thể tạo backup');
             }
         } catch (err) {
             console.error('Backup error', err);
-            alert(err && err.message ? err.message : 'Lỗi khi sao lưu');
+            toast.toast.error(
+                err && err.message ? err.message : 'Lỗi khi sao lưu'
+            );
         }
     };
 
@@ -99,8 +104,7 @@ const QuickActionsCard = () => {
                     onClose={() => setUserModalOpen(false)}
                     onSaved={() => {
                         setUserModalOpen(false);
-                        // optional: show a quick prompt
-                        alert('Người dùng đã được tạo');
+                        toast.toast.success('Người dùng đã được tạo');
                     }}
                 />
             )}

@@ -8,9 +8,11 @@ import {
     RefreshCw
 } from 'lucide-react';
 import api from '@services/api';
+import { useToast } from '@hooks/useToast';
 import '../styles/ActivityLogCard.css';
 
 const ActivityLogCard = () => {
+    const toast = useToast();
     const [activities, setActivities] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -288,11 +290,15 @@ const ActivityLogCard = () => {
                                 .then((r) => r.json())
                                 .then((d) => {
                                     console.log('✅ Manual test success:', d);
-                                    alert('Check console for results');
+                                    toast.toast.success(
+                                        'Kiểm tra xong — xem console'
+                                    );
                                 })
                                 .catch((e) => {
                                     console.error('❌ Manual test failed:', e);
-                                    alert('Check console for errors');
+                                    toast.toast.error(
+                                        'Kiểm tra thất bại — xem console'
+                                    );
                                 });
                         }}
                         style={{

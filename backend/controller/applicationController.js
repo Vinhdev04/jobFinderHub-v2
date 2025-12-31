@@ -10,15 +10,24 @@ const Notification = require('../models/Notification');
  */
 exports.getAllApplications = async (req, res, next) => {
     try {
-        const { page = 1, limit = 10, trangThai } = req.query;
+        const { page = 1, limit = 10, trangThai, companyId } = req.query;
 
         const filter = {};
         if (trangThai) {
             filter.trangThai = trangThai;
         }
 
+        // If companyId provided, restrict applications to jobs of that company
+        if (companyId) {
+            const jobs = await JobPosting.find({ congTy: companyId }).select(
+                '_id'
+            );
+            const jobIds = jobs.map((j) => j._id);
+            filter.tinTuyenDung = { $in: jobIds };
+        }
+
         const applications = await Application.find(filter)
-            .populate('tinTuyenDung', 'tieuDe viTri')
+            .populate('tinTuyenDung', 'tieuDe viTri congTy')
             .populate('ungVien', 'hoTen email')
             .limit(limit * 1)
             .skip((page - 1) * limit)
@@ -35,7 +44,6 @@ exports.getAllApplications = async (req, res, next) => {
                 pages: Math.ceil(total / limit)
             }
         });
-
     } catch (error) {
         console.error('❌ GetAllApplications error:', error);
         next(error);
@@ -66,7 +74,6 @@ exports.getApplicationById = async (req, res, next) => {
             success: true,
             data: application
         });
-
     } catch (error) {
         console.error('❌ GetApplicationById error:', error);
         next(error);
@@ -85,7 +92,12 @@ exports.createApplication = async (req, res, next) => {
         const cvFile = req.file; // multer places file at req.file
 
         if (!tinTuyenDung) {
-            return res.status(400).json({ success: false, message: 'Vui lòng chọn bài đăng việc làm' });
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    message: 'Vui lòng chọn bài đăng việc làm'
+                });
         }
 
         // Kiểm tra bài đăng tồn tại
@@ -98,9 +110,17 @@ exports.createApplication = async (req, res, next) => {
         }
 
         // Kiểm tra đã ứng tuyển chưa
-        const existingApplication = await Application.findOne({ tinTuyenDung, ungVien: req.user.id });
+        const existingApplication = await Application.findOne({
+            tinTuyenDung,
+            ungVien: req.user.id
+        });
         if (existingApplication) {
-            return res.status(400).json({ success: false, message: 'Bạn đã ứng tuyển bài đăng này rồi' });
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    message: 'Bạn đã ứng tuyển bài đăng này rồi'
+                });
         }
 
         // Prepare CV attachment info
@@ -118,7 +138,9 @@ exports.createApplication = async (req, res, next) => {
             ungVien: req.user.id,
             cvDinhKem,
             thuGioiThieu,
-            lichSuTrangThai: [{ trangThai: 'dang_xem_xet', nguoiThayDoi: req.user.id }]
+            lichSuTrangThai: [
+                { trangThai: 'dang_xem_xet', nguoiThayDoi: req.user.id }
+            ]
         });
 
         // Cập nhật số lượng ứng tuyển của bài đăng
@@ -140,7 +162,6 @@ exports.createApplication = async (req, res, next) => {
             message: 'Ứng tuyển thành công',
             data: populatedApplication
         });
-
     } catch (error) {
         console.error('❌ CreateApplication error:', error);
         next(error);
@@ -200,7 +221,6 @@ exports.updateApplicationStatus = async (req, res, next) => {
             message: 'Cập nhật trạng thái thành công',
             data: updatedApplication
         });
-
     } catch (error) {
         console.error('❌ UpdateApplicationStatus error:', error);
         next(error);
@@ -252,7 +272,6 @@ exports.withdrawApplication = async (req, res, next) => {
             success: true,
             message: 'Rút hồ sơ thành công'
         });
-
     } catch (error) {
         console.error('❌ WithdrawApplication error:', error);
         next(error);
@@ -291,7 +310,6 @@ exports.getApplicationsByStudent = async (req, res, next) => {
                 pages: Math.ceil(total / limit)
             }
         });
-
     } catch (error) {
         console.error('❌ GetApplicationsByStudent error:', error);
         next(error);
@@ -330,7 +348,6 @@ exports.getApplicationsByJob = async (req, res, next) => {
                 pages: Math.ceil(total / limit)
             }
         });
-
     } catch (error) {
         console.error('❌ GetApplicationsByJob error:', error);
         next(error);

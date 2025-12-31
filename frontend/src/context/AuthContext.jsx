@@ -1,4 +1,10 @@
-import React, { createContext, useState, useEffect, useCallback } from 'react';
+import React, {
+    createContext,
+    useState,
+    useEffect,
+    useCallback,
+    useContext
+} from 'react';
 import authService from '@services/authService';
 import { normalizeUser } from '@utils/normalizeUser';
 
@@ -21,7 +27,7 @@ export const AuthProvider = ({ children }) => {
                     const norm = normalizeUser(storedUser) || storedUser;
                     setUser(norm);
                     setIsAuthenticated(true);
-                    
+
                     // Optional: Verify token với backend
                     try {
                         const response = await authService.getMe();
@@ -119,13 +125,16 @@ export const AuthProvider = ({ children }) => {
             ...prevUser,
             ...updatedUser
         }));
-        
+
         // Cập nhật localStorage
         const currentUser = authService.getCurrentUser();
-        localStorage.setItem('user', JSON.stringify({
-            ...currentUser,
-            ...updatedUser
-        }));
+        localStorage.setItem(
+            'user',
+            JSON.stringify({
+                ...currentUser,
+                ...updatedUser
+            })
+        );
     }, []);
 
     // Làm mới thông tin user
@@ -154,8 +163,9 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={value}>
-            {children}
-        </AuthContext.Provider>
+        <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
     );
 };
+
+// Convenience hook for consuming the AuthContext
+export const useAuth = () => useContext(AuthContext);
