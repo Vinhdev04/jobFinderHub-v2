@@ -10,7 +10,7 @@ export const register = async (userData) => {
 };
 
 /**
- * Đăng nhập
+ * Đăng nhập.
  */
 export const login = async (credentials) => {
     const response = await api.post('/auth/login', credentials);
